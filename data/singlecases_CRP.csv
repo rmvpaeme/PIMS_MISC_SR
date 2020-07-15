@@ -1,0 +1,7 @@
+"","skim_type","skim_variable","n_missing","complete_rate","character.min","character.max","character.empty","character.n_unique","character.whitespace","numeric.mean","numeric.sd","numeric.p0","numeric.p25","numeric.p50","numeric.p75","numeric.p100","numeric.hist"
+"1","character","data_descr",0,1,3,3,0,1,0,NA,NA,NA,NA,NA,NA,NA,NA
+"2","character","cohort_id",0,1,21,21,0,1,0,NA,NA,NA,NA,NA,NA,NA,NA
+"3","numeric","lab_CRP_admis",16,0.831578947368421,NA,NA,NA,NA,NA,254.03417721519,116.233760802427,9,168,249.9,318,556,"▂▇▇▂▂"
+"4","numeric","lab_CRP_NS",84,0.115789473684211,NA,NA,NA,NA,NA,287.036363636364,131.782451583868,7.4,227.5,328,369.5,456,"▂▂▃▇▆"
+"5","numeric","lab_CRP_peak",82,0.136842105263158,NA,NA,NA,NA,NA,277.292307692308,93.9105466347139,164,191,250,357,425,"▇▃▂▅▃"
+"6","numeric","CRP_max",2,0.978947368421053,NA,NA,NA,NA,NA,263.895698924731,115.579009221415,7.4,183,256,335,556,"▂▇▇▃▂"

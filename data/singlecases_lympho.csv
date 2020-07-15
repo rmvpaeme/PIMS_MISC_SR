@@ -1,0 +1,4 @@
+"","skim_type","skim_variable","n_missing","complete_rate","character.min","character.max","character.empty","character.n_unique","character.whitespace","numeric.mean","numeric.sd","numeric.p0","numeric.p25","numeric.p50","numeric.p75","numeric.p100","numeric.hist"
+"1","character","cohort_id",0,1,21,21,0,1,0,NA,NA,NA,NA,NA,NA,NA,NA
+"2","numeric","lab_lymphocytes_lowest",34,0.642105263157895,NA,NA,NA,NA,NA,1082.4262295082,1106.15430597809,170,510,860,1150,7200,"▇▁▁▁▁"
+"3","numeric","lympho_min",34,0.642105263157895,NA,NA,NA,NA,NA,1082.4262295082,1106.15430597809,170,510,860,1150,7200,"▇▁▁▁▁"

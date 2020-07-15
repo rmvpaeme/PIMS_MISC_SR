@@ -1,0 +1,7 @@
+"","skim_type","skim_variable","n_missing","complete_rate","character.min","character.max","character.empty","character.n_unique","character.whitespace","numeric.mean","numeric.sd","numeric.p0","numeric.p25","numeric.p50","numeric.p75","numeric.p100","numeric.hist"
+"1","character","data_descr",0,1,3,3,0,1,0,NA,NA,NA,NA,NA,NA,NA,NA
+"2","character","cohort_id",0,1,21,21,0,1,0,NA,NA,NA,NA,NA,NA,NA,NA
+"3","numeric","lab_ferritin_NS",59,0.378947368421053,NA,NA,NA,NA,NA,1257.34166666667,1196.76388705423,199,535,906.5,1285.75,5440,"▇▂▁▁▁"
+"4","numeric","lab_ferritin_admis",74,0.221052631578947,NA,NA,NA,NA,NA,1843.69523809524,2542.45884341835,264,446,1089,1789,10170,"▇▁▁▁▁"
+"5","numeric","lab_ferritin_peak",84,0.115789473684211,NA,NA,NA,NA,NA,1348.11818181818,1130.04466178836,375.8,776.15,1096.2,1346.5,4488,"▇▃▁▁▁"
+"6","numeric","ferrit_max",33,0.652631578947368,NA,NA,NA,NA,NA,1457.52258064516,1757.77083219006,199,525,939,1478.5,10170,"▇▁▁▁▁"
