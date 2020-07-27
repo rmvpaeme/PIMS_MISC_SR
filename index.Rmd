@@ -1,7 +1,7 @@
 ---
 title: "Multisystem inflammatory syndrome in children related to COVID-19: a systematic review"
 subtitle: "Extended methods and data analysis"
-author: "Levi Hoste, Ruben Van Paemel*, Filomeen Haerynck"
+author: "Levi Hoste, Ruben Van Paemel, Filomeen Haerynck"
 date: "`r format(Sys.time(), '%d %B, %Y, %H:%M:%S')`"
 output:
   html_document:
@@ -51,6 +51,7 @@ library(skimr)
 library(UpSetR)
 library(see)
 library(wesanderson)
+library(padr)
 
 options(scipen=999)
 
@@ -402,7 +403,7 @@ The single cases from Pouletty (10.1136/annrheumdis-2020-217960) are excluded (a
 
 ```{r}
 df_singlecases <-
-  read_excel("/Users/rmvpaeme/Onedrive/UGent/PIMS-TS Systematic Review - Data extractie/data extractie.xlsx",
+  read_excel("/Users/rmvpaeme/Onedrive/UGent/PIMS-TS Systematic Review - General/Data extractie/data extractie.xlsx",
              sheet = "Single cases",
              skip = 1,
              col_names = FALSE)[,-c(1:2)]
@@ -432,7 +433,12 @@ df_singlecases_inclPouletty <- df_singlecases
 df_singlecases <- df_singlecases %>% filter(doi != "https://10.1136/annrheumdis-2020-217960")  # these cases are excluded according to the data sheet
 
 df_singlecases <- df_singlecases[colSums(!is.na(df_singlecases)) > 0]
+
+df_singlecases$date_of_publication <- as.Date(df_singlecases$date_of_publication, origin = "1899-12-30")
+
 n_single_cases <- nrow(df_singlecases)
+
+
 ```
 
 
@@ -521,7 +527,7 @@ Afterwards, we do the same for the cohort sheet.
 The papers by Grimaud et al. and Verdoni et al. are removed from the cohort dataframe, as most information is present in the single cases dataframe. 
 ```{r}
 df_cohort <-
-  read_excel("/Users/rmvpaeme/Onedrive/UGent/PIMS-TS Systematic Review - Data extractie/data extractie.xlsx",
+  read_excel("/Users/rmvpaeme/Onedrive/UGent/PIMS-TS Systematic Review - General/Data extractie/data extractie.xlsx",
              sheet = "Cohorts",
              skip = 1,
              col_names = FALSE)[,-c(1:3)]
@@ -558,6 +564,8 @@ df_cohort_controls <- df_cohort
 
 df_cohort <- df_cohort %>% filter(cohort_type == "covid")
 
+df_cohort$date_of_publication <- as.Date(df_cohort$date_of_publication, origin = "1899-12-30")
+
 write.csv(df_cohort, paste0("./data/df_cohort.csv"))
 
 #datatable(df_cohort, caption = "Cohort dataframe")
@@ -569,10 +577,7 @@ write.csv(df_cohort, paste0("./data/df_cohort.csv"))
 # Descriptive statistics {.tabset}
 ## General
 
-
 **Click on the any of the tabs above to see descriptive statistics for every variable**      
-
-
 
 ## Single cases
 **How to read**  
@@ -620,6 +625,129 @@ write.csv(df_cohort_controls_stats, paste0("./data/df_cohort_controls_stats.csv"
 
 
 # Data exploration
+
+**Important** 
+
+For the cohorts, percentages describe the total (e.g. positive) cases, divided by the sum of the total cases **of studies reporting the variable**.
+
+## Cases in function of COVID pandemic
+
+To investigate the relationship of the published PIMS cases with the ongoing COVID-19 pandemic, the case data from [Johns Hopkins](https://github.com/CSSEGISandData/COVID-19) was downloaded (and added to this repository).
+
+The list was filtered on the UK, US, Italy and France, as these country contribute the most to our dataset. 
+
+Caveat: this is a distored image of the PIMS cases: as the cases are published together, their true date of diagnosis is unknown. 
+
+```{r}
+
+firstdiff <- function(x) {
+   shifted <- c(0,x[1:(length(x)-1)])
+   x-shifted
+   }
+
+USA_cases <- read_csv("./data/time_series_covid19_confirmed_US.csv")
+USA_cases <- USA_cases %>% select(-c(UID, iso2, iso3, code3, FIPS, Admin2, Province_State, Lat, Long_, Combined_Key))
+
+names(USA_cases)[names(USA_cases) == 'Country_Region'] <- "Country/Region"
+
+global_cases <- read_csv("./data/time_series_covid19_confirmed_global.csv")
+global_cases <- global_cases %>% select(-c(`Province/State`, Lat, Long))
+
+global_cases <- rbind(USA_cases, global_cases)
+
+global_cases <- global_cases %>% melt()
+global_cases$variable <- as.Date(global_cases$variable, format = "%m/%d/%y")
+colnames(global_cases) <- c("country", "date_of_publication", "tot_cases_covid")
+global_cases <- global_cases %>% filter(country == "United Kingdom"  | country == "Italy" | country == "France" | country == "US")
+all_glob_cases <- global_cases %>% group_by(date_of_publication) %>% summarise(total_cases = sum(tot_cases_covid))
+all_glob_cases$newcases <- firstdiff(all_glob_cases$total_cases)
+all_glob_cases$newcase_roll7 <- zoo::rollmean(all_glob_cases$newcases, k = 7, fill = NA)
+
+evo_cases <- rbind(df_cohort %>% select(tot_cases_n, date_of_publication) %>% mutate(type = "cohort"), 
+df_singlecases %>% select(date_of_publication) %>% mutate(tot_cases_n = 1, type = "single"))
+
+evo_cases <- pad(evo_cases)
+evo_cases$tot_cases_n[is.na(evo_cases$tot_cases_n)] <- 0
+evo_cases$cumplot <- cumsum(evo_cases$tot_cases_n)
+
+full_data <- merge(evo_cases, all_glob_cases, all = TRUE)
+
+p1 <- ggplot(full_data , aes(x = date_of_publication, y = cumplot)) +
+        geom_col(position = "dodge", col = wes_palette("Royal1")[2], fill = wes_palette("Royal1")[2]) + 
+        theme_bw() + geom_line(aes(x = date_of_publication, y = newcase_roll7/175)) +
+        labs(x = "Date", y = "cumulative number of cases", title = "Number of published cases") +  scale_x_date(limits = as.Date(c('2020-01-15','2020-07-01'))) + scale_y_continuous(
+    "cumulative number of published cases", 
+    sec.axis = sec_axis(~ . * 175, name = "new COVID-19 cases (7-day average)")
+  )
+
+p1 
+
+ggsave(p1, filename = "./plots/covid_evo_total.png", dpi = 300, height=7, width=10)
+ggsave(p1, filename = "./plots/covid_evo_total.svg", dpi = 300, height=7, width=10)
+ggsave(p1, filename = "./plots/covid_evo_total.pdf", dpi = 300, height=7, width=10)
+
+
+
+all_glob_cases <- global_cases %>% group_by(date_of_publication, country) %>% summarise(total_cases = sum(tot_cases_covid)) %>% ungroup()
+
+
+all_glob_cases <- all_glob_cases %>% group_by(country) %>%
+  mutate(newcases = firstdiff(total_cases)) %>% ungroup()
+
+#all_glob_cases$newcases <- firstdiff(all_glob_cases$total_cases)
+all_glob_cases <- all_glob_cases %>% group_by(country)  %>% mutate(newcase_roll7 = zoo::rollmean(newcases, k = 7, fill = NA)) 
+
+evo_cases <- rbind(df_cohort %>% select(tot_cases_n, date_of_publication, country) %>% mutate(type = "cohort"), 
+df_singlecases %>% select(date_of_publication, country) %>% mutate(tot_cases_n = 1, type = "single"))
+
+country_barplot <- evo_cases
+
+evo_cases <- pad(evo_cases)
+#evo_cases$tot_cases_n[is.na(evo_cases$tot_cases_n)] <- 0
+#evo_cases$tot_cases_n[is.na(evo_cases$tot_cases_n)] <- 0
+evo_cases <- evo_cases %>% group_by(country) %>% mutate(cumplot = cumsum(tot_cases_n)) %>% ungroup()
+evo_cases <- evo_cases %>% fill(country)
+
+
+full_data <- merge(evo_cases, all_glob_cases, all = TRUE)
+full_data_filt <- full_data %>% filter(country == "United Kingdom"  | country == "Italy" | country == "France" | country == "US")
+
+full_data_filt <- full_data_filt %>% mutate(continent = ifelse(country == "US", "US", "Europe"))
+
+p1 <- ggplot(full_data_filt , aes(x = date_of_publication, y = cumplot)) +
+        geom_col(position = "dodge", aes(fill = country, col = country)) + 
+        theme_bw() + 
+        scale_color_manual(values = wes_palette("Darjeeling2")[c(1,3,4,2)]) +
+  scale_fill_manual(values = wes_palette("Darjeeling2")[c(1,3,4,2)]) +
+        geom_line(aes(x = date_of_publication, y = newcase_roll7/100, col = country)) +
+        labs(x = "Date", y = "cumulative number of cases (bars)", title = "Number of published cases, per country") +
+        scale_x_date(limits = as.Date(c('2020-03-01','2020-07-01'))) + scale_y_continuous(    "cumulative number of published cases (bars)", 
+    sec.axis = sec_axis(~ . * 100, name = "new COVID-19 cases (7-day average, lines)") 
+  ) + 
+      theme(legend.position="bottom") + 
+      facet_wrap(~continent, scales = "free_y")
+
+p1
+
+ggsave(p1, filename = "./plots/covid_evo_percountry.png", dpi = 300, height=7, width=10)
+ggsave(p1, filename = "./plots/covid_evo_percountry.svg", dpi = 300, height=7, width=10)
+ggsave(p1, filename = "./plots/covid_evo_percountry.pdf", dpi = 300, height=7, width=10)
+
+```
+
+## PIMS cases by country 
+
+```{r}
+
+ggplot(country_barplot, aes(x = reorder(country, -tot_cases_n), y = tot_cases_n, fill = type)) + 
+        geom_bar(stat = 'identity') +
+        theme_bw() +
+        scale_fill_manual(values = wes_palette("Royal1")) + 
+        labs(x = "Country", y = "Total cases", title = "Cases per countries in dataset")
+
+```
+
+
 ## Total cases and deaths
 ```{r}
 #var_id_cohort = "outcome_death_n"
@@ -1666,7 +1794,7 @@ criteria_summary[,cols] <- lapply(criteria_summary[,cols], as.numeric)
 
 criteria_summary <- criteria_summary %>% melt() %>% 
                           group_by(variable) %>% 
-                          summarise(fulfilled = sum(value == 1, na.rm = TRUE), not_fulfilled = sum(value == 0, na.rm = TRUE), not_evaluable = sum(is.na(value)))
+                          summarise(fulfilled = sum(value == 1, na.rm = TRUE), not_fulfilled = sum(value == 0, na.rm = TRUE), not_assessable = sum(is.na(value)))
 criteria_summary$sum <- rowSums(criteria_summary[,-1])
 
 criteria_summary_melt <- criteria_summary %>% melt()
@@ -1698,14 +1826,17 @@ colnames(PIMS_TS_outcome) <- c("patientID_int", "casedef_PIMS_TS_fulfilled")
 
 assoc_outcome <- merge(WHO_outcome, CDC_outcome, by = "patientID_int")
 assoc_outcome <- merge(assoc_outcome, PIMS_TS_outcome)
+
 #assoc_outcome <- assoc_outcome[complete.cases(assoc_outcome[ ,-1]),]
 
 outcome_params <- df_singlecases %>% select(patientID_int | symp_cardiovasc_cordilat | symp_cardiovasc_aneurysm | symp_cardiovasc_shock | outcome_death | critcare_MV | critcare_ECMO)
 
 assoc_outcome_full <- merge(outcome_params, assoc_outcome, by = "patientID_int", all = TRUE)
 
+
 cols <- sapply(assoc_outcome_full, is.logical)
 assoc_outcome_full[,cols] <- lapply(assoc_outcome_full[,cols], as.numeric)
+
 
 makeUpsetR(assoc_outcome_full %>% select(-contains("patientID")))
 ```
@@ -1725,10 +1856,13 @@ A new variable 'unfavourable course' made, which contains the following:
 
 Mild presentation means all of the above are either 0 or NA. 
 
+Cases with missing values in case defintions are removed.
+
 ```{r}
 assoc_outcome <- merge(WHO_outcome, CDC_outcome, by = "patientID_int")
 assoc_outcome <- merge(assoc_outcome, PIMS_TS_outcome)
-#assoc_outcome <- #assoc_outcome[complete.cases(assoc_outcome[ ,-1]),]
+assoc_outcome <- merge(assoc_outcome, PIMS_TS_outcome)
+assoc_outcome <- assoc_outcome[complete.cases(assoc_outcome[ ,-1]),]
 
 outcome_params <- df_singlecases %>% select(patientID_int | contains("critcare")  | contains("admis_PICU_admis") | contains("outcome_death")  |contains ("symp_cardiovasc_cordilat") | contains ("symp_cardiovasc_aneurysm")  |contains("symp_cardiovasc_shock"))
 
@@ -1746,6 +1880,8 @@ makeUpsetR(assoc_outcome_full %>% select(contains("casedef") | contains("unfavou
 
 makeUpsetR(assoc_outcome_full %>% select(contains("casedef") | contains("unfavourable_course")  | contains("mild_pres") ))
 
+#datatable(assoc_outcome_full %>% select(contains("patient") | contains("casedef") | contains("unfavourable_course") | contains("mild_pres")))
+
 ```
 
 ## PICU candidate
@@ -1761,10 +1897,12 @@ A new variable 'PICU candidate' made, which contains the following:
 
 Mild presentation means all of the above are either 0 or NA. 
 
+Cases with missing values in case defintions are removed.
+
 ```{r}
 assoc_outcome <- merge(WHO_outcome, CDC_outcome, by = "patientID_int")
 assoc_outcome <- merge(assoc_outcome, PIMS_TS_outcome)
-#assoc_outcome <- assoc_outcome[complete.cases(assoc_outcome[ ,-1]),]
+assoc_outcome <- assoc_outcome[complete.cases(assoc_outcome[ ,-1]),]
 
 outcome_params <- df_singlecases %>% select(patientID_int | contains("critcare")  | contains("admis_PICU_admis") | contains("outcome_death")  |contains ("symp_cardiovasc_cordilat") | contains ("symp_cardiovasc_aneurysm")  |contains("symp_cardiovasc_shock"))
 
@@ -1781,6 +1919,8 @@ makeUpsetR(assoc_outcome_full %>% select(contains("casedef") | contains("PICU_ca
 
 
 makeUpsetR(assoc_outcome_full %>% select(contains("casedef") | contains("PICU_candidate")  | contains("mild_pres") ))
+
+#datatable(assoc_outcome_full %>% select(contains("patient") | contains("casedef") | contains("PICU_candidate") | contains("mild_pres")))
 
 ```
 

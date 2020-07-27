@@ -1,5 +1,4 @@
 
-
 # Final figures
 
 ## Sex
@@ -85,7 +84,7 @@ p_age_single <- ggplot(df_singlecases, aes(x = as.numeric(age), y = paste0("sing
   geom_violin(fill = wes_palette("Darjeeling2")[4]) + 
   geom_boxplot(width=.3, fill = wes_palette("Darjeeling2")[1]) + 
   theme_bw() + geom_beeswarm(groupOnX=FALSE, alpha = 0.5) + lims(x = c(0,21)) + 
-  labs(y = "cohort", x = "Age (years)")
+  labs(y = "", x = "Age (years)")
 
 plot_age <- plot_grid(p_age_cohort, p_age_controls, p_age_single, align = "v", nrow = 3, rel_heights = c(2/3, 1/5, 1/3))
 plot_age
@@ -252,9 +251,9 @@ troponin_grid
 ### Platelets
 
 ```{r}
-collapse_cohort <- collapse_labvals_cohort(df_cohort_controls, "max", "platelet")
-collapse_single <- collapse_labvals_single(df_singlecases_inclPouletty, "max", "platelet")
-missing <- sum(is.na(collapse_single$platelet_max))
+collapse_cohort <- collapse_labvals_cohort(df_cohort_controls, "min", "platelet")
+collapse_single <- collapse_labvals_single(df_singlecases, "min", "platelet")
+missing <- sum(is.na(collapse_single$platelet_min))
 
 p_platelet_cohort <- ggplot(collapse_cohort, aes(y = cohort_id, x = platelet_med/1000, col = cohort_type)) + 
   geom_point() +  
@@ -263,7 +262,7 @@ p_platelet_cohort <- ggplot(collapse_cohort, aes(y = cohort_id, x = platelet_med
   geom_vline(xintercept = co_platelet/1000, linetype = "dashed", color = "black")  + theme(legend.justification = c(1, 1), legend.position = "none", legend.title=element_blank()) +
   scale_color_manual(values = wes_palette("Royal1"))+ rremove("y.text") 
 
-p_platelet_single <- ggplot(collapse_single, aes(x = as.numeric(platelet_max)/1000, y = cohort_id)) +
+p_platelet_single <- ggplot(collapse_single, aes(x = as.numeric(platelet_min)/1000, y = cohort_id)) +
   geom_violin(fill = wes_palette("Darjeeling2")[4]) + 
   geom_boxplot(width=.3, fill = wes_palette("Darjeeling2")[1]) + 
   theme_bw() + geom_beeswarm(groupOnX=FALSE, alpha = 0.5) + labs(y = "", x = "Platelets (x1000/µL)", subtitle = paste0("missing data for ", missing, " cases")) + lims(x = c(0,750)) +
@@ -278,7 +277,7 @@ platelet_grid
 
 ```{r}
 collapse_cohort <- collapse_labvals_cohort(df_cohort_controls, "max", "Ddim")
-collapse_single <- collapse_labvals_single(df_singlecases_inclPouletty, "max", "Ddim")
+collapse_single <- collapse_labvals_single(df_singlecases, "max", "Ddim")
 missing <- sum(is.na(collapse_single$Ddim_max))
 
 p_Ddim_cohort <- ggplot(collapse_cohort, aes(y = cohort_id, x = Ddim_med, col = cohort_type)) + 
@@ -303,7 +302,7 @@ Ddim_grid
 
 ```{r}
 collapse_cohort <- collapse_labvals_cohort(df_cohort_controls, "min", "sodium")
-collapse_single <- collapse_labvals_single(df_singlecases_inclPouletty, "min", "sodium")
+collapse_single <- collapse_labvals_single(df_singlecases, "min", "sodium")
 missing <- sum(is.na(collapse_single$sodium_min))
 
 p_sodium_cohort <- ggplot(collapse_cohort, aes(y = cohort_id, x = sodium_med, col = cohort_type)) + 
@@ -325,14 +324,13 @@ sodium_grid
 
 
 ### Grid plots
-Example:
-  
-  Dashed lines equals reference value cut-off.
 
-```{r, fig.height= 10, fig.width=16}
+Dashed lines equals reference value cut-off.
+
+```{r, fig.height= 16, fig.width=12}
 figure <- ggarrange(CRP_grid, WBC_grid, sodium_grid, ferritin_grid, lympho_grid, Ddim_grid, IL6_grid, platelet_grid, troponin_grid, labels = c("A", "B", "C", "D", "E", "G", "G", "H", "I"), widths = c(1.25,1,1))
 ggsave(figure, filename = "./plots/lab_grid_plots.png", dpi = 300, height=16, width=12)
-ggsave(figure, filename = "./plots/lab_grid_plots.svg", dpi = 300, height=12, width=16)
-ggsave(figure, filename = "./plots/lab_grid_plots.pdf", dpi = 300, height=12, width=16)
+ggsave(figure, filename = "./plots/lab_grid_plots.svg", dpi = 300, height=16, width=12)
+ggsave(figure, filename = "./plots/lab_grid_plots.pdf", dpi = 300, height=16, width=12)
 figure
 ```

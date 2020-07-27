@@ -5,5 +5,3 @@ The extended methods and data-analyses are presented here in RMarkdown format.
 The `./data` folder contains the dataframes from the RMarkdown file, the dataframes resulting from the initial `.xls` files, as well as descriptive statistics for these dataframes and lab values used in the figures. 
 
 The `./plots` folder contains the figures and PRISMA diagram. 
-
-The search strategy for the preprint servers is described in `preprint_search.R`
