@@ -1,5 +1,5 @@
 "","skim_type","skim_variable","n_missing","complete_rate","character.min","character.max","character.empty","character.n_unique","character.whitespace","numeric.mean","numeric.sd","numeric.p0","numeric.p25","numeric.p50","numeric.p75","numeric.p100","numeric.hist"
 "1","character","data_descr",0,1,3,3,0,1,0,NA,NA,NA,NA,NA,NA,NA,NA
-"2","character","cohort_id",0,1,21,21,0,1,0,NA,NA,NA,NA,NA,NA,NA,NA
-"3","numeric","lab_WBC_highest",70,0.263157894736842,NA,NA,NA,NA,NA,18418.4,10027.2149174135,2900,11800,15800,23110,40000,"▂▇▂▂▂"
-"4","numeric","WBC_max",70,0.263157894736842,NA,NA,NA,NA,NA,18418.4,10027.2149174135,2900,11800,15800,23110,40000,"▂▇▂▂▂"
+"2","character","cohort_id",0,1,22,22,0,1,0,NA,NA,NA,NA,NA,NA,NA,NA
+"3","numeric","lab_WBC_highest",86,0.376811594202899,NA,NA,NA,NA,NA,21066.1538461538,45109.2998173889,2860,9150,12800,20075,333600,"▇▁▁▁▁"
+"4","numeric","WBC_max",86,0.376811594202899,NA,NA,NA,NA,NA,21066.1538461538,45109.2998173889,2860,9150,12800,20075,333600,"▇▁▁▁▁"

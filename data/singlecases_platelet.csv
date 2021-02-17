@@ -1,6 +1,6 @@
 "","skim_type","skim_variable","n_missing","complete_rate","character.min","character.max","character.empty","character.n_unique","character.whitespace","numeric.mean","numeric.sd","numeric.p0","numeric.p25","numeric.p50","numeric.p75","numeric.p100","numeric.hist"
-"1","character","cohort_id",0,1,21,21,0,1,0,NA,NA,NA,NA,NA,NA,NA,NA
-"2","numeric","lab_platelets_NS",21,0.778947368421053,NA,NA,NA,NA,NA,189500,94223.9026766374,42000,121500,170000,234750,516000,"▆▇▃▁▁"
-"3","numeric","lab_platelets_highest",89,0.0631578947368421,NA,NA,NA,NA,NA,583666.666666667,289892.853769572,250000,431500,551500,631000,1100000,"▇▃▇▁▃"
-"4","numeric","lab_platelets_lowest",90,0.0526315789473685,NA,NA,NA,NA,NA,180600,90762.3269864761,100000,111000,136000,260000,296000,"▇▁▁▁▅"
-"5","numeric","platelet_min",14,0.852631578947368,NA,NA,NA,NA,NA,198135.802469136,109731.462339479,42000,121000,175000,242000,636000,"▇▆▂▁▁"
+"1","character","cohort_id",0,1,22,22,0,1,0,NA,NA,NA,NA,NA,NA,NA,NA
+"2","numeric","lab_platelets_NS",45,0.673913043478261,NA,NA,NA,NA,NA,197677.419354839,105813.839944039,42000,121000,175000,243000,672000,"▇▆▂▁▁"
+"3","numeric","lab_platelets_highest",129,0.0652173913043478,NA,NA,NA,NA,NA,490000,270987.084563084,239000,294000,413000,616000,1100000,"▇▃▃▁▂"
+"4","numeric","lab_platelets_lowest",129,0.0652173913043478,NA,NA,NA,NA,NA,155111.111111111,80784.3494193715,49000,100000,136000,181000,296000,"▅▇▅▁▅"
+"5","numeric","platelet_min",34,0.753623188405797,NA,NA,NA,NA,NA,200990.384615385,115468.357805156,42000,120500,173000,250500,672000,"▇▆▂▁▁"

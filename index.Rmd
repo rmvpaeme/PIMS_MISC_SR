@@ -1,19 +1,26 @@
 ---
-title: "Multisystem inflammatory syndrome in children related to COVID-19: a systematic review"
-subtitle: "Extended methods and data analysis"
+title: 'Multisystem inflammatory syndrome in children related to COVID-19: a systematic
+  review'
 author: "Levi Hoste, Ruben Van Paemel, Filomeen Haerynck"
 date: "`r format(Sys.time(), '%d %B, %Y, %H:%M:%S')`"
 output:
   html_document:
+    code_download: yes
     code_folding: hide
+    df_print: paged
+    fig_caption: yes
     highlight: kate
     number_sections: yes
     theme: cosmo
     toc: yes
     toc_float: yes
-    df_print: paged
-    code_download: true
-    fig_caption: yes
+  pdf_document:
+    toc: yes
+    latex_engine: xelatex
+    pandoc_args: --listings
+    includes:
+      in_header: preamble.tex
+subtitle: Extended methods and data analysis
 ---
 
 <style>
@@ -23,13 +30,12 @@ text-align: justify}
 
 
 # Introduction
-In this RMarkdown file, the extended methods and data-analysis for the manuscript "Multisystem inflammatory syndrome in children related to COVID-19: a systematic review" is described. The complete data-analysis can be reproduced from the data collection sheet (in .xls format), provided in the supplementary files of the manuscript or on [Github](https://github.com/rmvpaeme/PIMS_TS).
-
-Prior to conducting the review, the study protocol was published on the [PROSPERO systematic review register (CRD42020189248)](https://www.crd.york.ac.uk/prospero/display_record.php?RecordID=189248).
+In this RMarkdown file, the extended methods and data-analysis for the manuscript "Multisystem inflammatory syndrome in children related to COVID-19: a systematic review" is described. The complete data-analysis can be reproduced from the data collection sheet (in .xls format), provided in the supplementary files of the manuscript or on [Github](https://github.com/rmvpaeme/PIMS_MISC_SR). The study protocol was published on the PROSPERO systematic review register, prior to conducting the review: [CRD42020189248](https://www.crd.york.ac.uk/prospero/display_record.php?RecordID=189248)
 
 ```{r setup, include=TRUE, warning = FALSE, message = FALSE}
 knitr::opts_chunk$set(cache = FALSE, warning = FALSE, message = FALSE)
 options(digits = 3)
+options(width = 60)
 library(tidyverse)
 require(readxl)
 require(httr)
@@ -87,18 +93,18 @@ collapse_labvals_cohort <- function(input, find, param, verbose = FALSE){
     df_med <- df %>% select(contains("med"))
     df_med <- type_convert(df_med)
     df_med <- df_med %>% mutate_all(funs(replace_na(., -999)))
-   # colnames(df_med)[max.col(df_med,ties.method="first")]
+    # colnames(df_med)[max.col(df_med,ties.method="first")]
     df_med <- df_med %>% mutate(med = as.numeric(apply(df_med, 1, max)))
     
     df_min <- df %>% select(contains("Q1"))
     df_min <- type_convert(df_min)
-    df_min <- df_min %>% mutate_all(funs(replace_na(., 0)))
+    df_min <- df_min %>% mutate_all(funs(replace_na(., -999)))
     #colnames(df_min)[max.col(df_min,ties.method="first")]
     df_min <- df_min %>% mutate(min = as.numeric(apply(df_min, 1, max)))
     
     df_max <- df %>% select(contains("Q3"))
     df_max <- type_convert(df_max)
-    df_max <- df_max %>% mutate_all(funs(replace_na(., 0)))
+    df_max <- df_max %>% mutate_all(funs(replace_na(., -999)))
     #colnames(df_max)[max.col(df_max,ties.method="first")]
     df_max <- df_max %>% mutate(max = as.numeric(apply(df_max, 1, max)))
     
@@ -113,16 +119,16 @@ collapse_labvals_cohort <- function(input, find, param, verbose = FALSE){
     print(datatable(df_full, caption = paste0("overview of ", param)))
     return(df_full)
   }
-    else if (find == "min"){
+  else if (find == "min"){
     df <- input %>% select(contains(param) | contains("cohort_id") | contains("cohort_type") | contains("tot_cases_n"))
     if (verbose == TRUE){
-    print("Column extracted from cohorts:")
-    print(colnames(df))
+      print("Column extracted from cohorts:")
+      print(colnames(df))
     }
     df_med <- df %>% select(contains("med"))
     df_med <- type_convert(df_med)
     df_med <- df_med %>% mutate_all(funs(replace_na(., 1e6)))
-   # colnames(df_med)[max.col(df_med,ties.method="first")]
+    # colnames(df_med)[max.col(df_med,ties.method="first")]
     df_med <- df_med %>% mutate(med = as.numeric(apply(df_med, 1, min)))
     
     df_min <- df %>% select(contains("Q1"))
@@ -158,12 +164,12 @@ collapse_labvals_single <- function(input, find, param, verbose = FALSE){
   if (find == "max"){
     df <- input %>% select(contains(param) | contains("cohort_id"))
     if (verbose == TRUE){
-    print("Column extracted from single cases:")
-    print(colnames(df))
+      print("Column extracted from single cases:")
+      print(colnames(df))
     }
     df_coll <- df %>% mutate_all(funs(replace_na(., -999)))
     df_coll <- type_convert(df_coll)
-   # colnames(df_med)[max.col(df_med,ties.method="first")]
+    # colnames(df_med)[max.col(df_med,ties.method="first")]
     df_coll <- df_coll %>% mutate(max = as.numeric(apply(df_coll, 1, max)))
     
     df_coll[df_coll == -999] <- NA
@@ -173,14 +179,14 @@ collapse_labvals_single <- function(input, find, param, verbose = FALSE){
     write.csv(skim(df_coll), paste0("./data/singlecases_", param, ".csv"))
     return(df_coll)
   }
-    else if (find == "min"){
+  else if (find == "min"){
     df <- input %>% select(contains(param) | contains("cohort_id"))
     if (verbose == TRUE){
-    print("Column extracted from single cases:")
-    print(colnames(df))
+      print("Column extracted from single cases:")
+      print(colnames(df))
     }
     df_coll <- df %>% mutate_all(funs(replace_na(., 1e6)))
-   # colnames(df_med)[max.col(df_med,ties.method="first")]
+    # colnames(df_med)[max.col(df_med,ties.method="first")]
     df_coll <- df_coll %>% mutate(min = as.numeric(apply(df_coll, 1, min)))
     
     df_coll[df_coll == 1e6] <- NA
@@ -229,37 +235,39 @@ moveme <- function (df, movecommand) {
 }
 
 makeBarplot <- function(var_id_cohort, var_id_single, var_id){
-
-        n_cohort <- df_cohort %>% select(tot_cases_n) %>% sum()#, outcome_death_n)
-        var_cohort <- df_cohort[var_id_cohort] %>% sum(., na.rm = TRUE)#, outcome_death_n)
-        
-        n_single <- df_singlecases %>% nrow()
-        
-        var_single <- df_singlecases %>% filter(get(var_id_single) == TRUE) %>% nrow()
-        
-        n_all <- n_cohort + n_single
-        var_all <- var_cohort + var_single
-        
-        bar_df_abs <- data.frame(x = c("cohort", "cohort", "single cases", "single cases", "all", "all"), col = c("total", var_id, "total", var_id, "total", var_id), vals = c(n_cohort, var_cohort, n_single, var_single, n_all, var_all) )
-        
-        bar_df_prct <- data.frame(x = c("cohort", "cohort", "single cases", "single cases", "all", "all"), col = c(paste0(var_id, " -"), paste0(var_id, " +"), paste0(var_id, " -"), paste0(var_id, " +"), paste0(var_id, " -"), paste0(var_id, " +")), vals = c(100-(var_cohort/n_cohort*100), var_cohort/n_cohort*100, 100-(var_single/n_single*100), var_single/n_single*100, 100-(var_all/n_all*100), var_all/n_all*100) )
-
-        
-        p_abs <- ggplot(bar_df_abs, aes(x = x, y =  vals, fill = col)) +
-            geom_bar(stat = "identity", position = "dodge") +
-            theme_bw() + 
-            labs(title = paste0("Total cases vs ", var_id), subtitle = "Absolute numbers", x = "group", y = "n", col = "") +
-  scale_fill_manual(values = wes_palette("Royal1"))
-        
-        
-        p_prct <- ggplot(bar_df_prct, aes(x = x, y =  vals, fill = col)) +
-            geom_bar(stat = "identity", position = "fill") +
-            theme_bw() + 
-            labs(title = paste0(var_id), subtitle = "Percent", x = "group", y = "%", col = "")  +
+  
+  n_cohort <- df_cohort %>% select(tot_cases_n) %>% sum()#, outcome_death_n)
+  var_cohort <- df_cohort[var_id_cohort] %>% sum(., na.rm = TRUE)#, outcome_death_n)
+  
+  n_single <- df_singlecases %>% nrow()
+  
+  var_single <- df_singlecases %>% filter(get(var_id_single) == TRUE) %>% nrow()
+  
+  n_all <- n_cohort + n_single
+  var_all <- var_cohort + var_single
+  
+  bar_df_abs <- data.frame(x = c("cohort", "cohort", "single cases", "single cases", "all", "all"), col = c("total", var_id, "total", var_id, "total", var_id), vals = c(n_cohort, var_cohort, n_single, var_single, n_all, var_all) )
+  
+  bar_df_prct <- data.frame(x = c("cohort", "cohort", "single cases", "single cases", "all", "all"), col = c(paste0(var_id, " -"), paste0(var_id, " +"), paste0(var_id, " -"), paste0(var_id, " +"), paste0(var_id, " -"), paste0(var_id, " +")), vals = c(100-(var_cohort/n_cohort*100), var_cohort/n_cohort*100, 100-(var_single/n_single*100), var_single/n_single*100, 100-(var_all/n_all*100), var_all/n_all*100) )
+  
+  
+  p_abs <- ggplot(bar_df_abs, aes(x = x, y =  vals, fill = col)) +
+    geom_bar(stat = "identity", position = "dodge") +
+    theme_bw() + 
+    labs(title = paste0("Total cases vs ", var_id), subtitle = "Absolute numbers", x = "group", y = "n", col = "") +
+    scale_fill_manual(values = wes_palette("Royal1")) +
+    theme(legend.title = element_blank())
+  
+  
+  p_prct <- ggplot(bar_df_prct, aes(x = x, y =  vals, fill = col)) +
+    geom_bar(stat = "identity", position = "fill") +
+    theme_bw() + 
+    labs(title = paste0(var_id), subtitle = "Percent", x = "group", y = "%", col = "")  +
     scale_y_continuous(labels = scales::percent)+
-  scale_fill_manual(values = wes_palette("Royal1"))
-        
-        ggarrange(p_abs, p_prct, legend = "bottom")
+    scale_fill_manual(values = wes_palette("Royal1")) +
+    theme(legend.title = element_blank())
+  
+  ggarrange(p_abs, p_prct, legend = "bottom")
   
 }
 
@@ -269,51 +277,51 @@ makeHeatmap_cohort <- function(param1, colname_single, exclude_single = NULL, pl
   var_cohort <- var_cohort %>% 
     gather(variable, value, 3:ncol(var_cohort)) %>% group_by(cohort_id, variable) %>% summarize(prct = value/tot_cases_n*100)
   var_cohort$variable <- sub("_n", "", var_cohort$variable)
-
-if (!is.null(exclude_single)){
-  var_single <- df_singlecases %>% select(-contains(exclude_single))
-  var_single <- var_single %>% select(contains(colname_single))
-} else
-{
-  var_single <- df_singlecases %>% select(contains(colname_single))
-}
-
- #%>% select(-contains("any"))
-cols <- sapply(var_single, is.logical)
-var_single[,cols] <- lapply(var_single[,cols], as.numeric)
-var_single <- colSums(var_single, na.rm = TRUE)
-var_single <- var_single/nrow(df_singlecases)*100
-var_single <- as.data.frame(var_single) %>% rownames_to_column()
-var_single$cohort_id <- paste0("single cases (n = ", n_single_cases,")")
-colnames(var_single) <- c("variable", "prct", "cohort_id")
-
-
-missing <- setdiff(var_single$variable, var_cohort$variable)
-if (length(missing) != 0 ){
-  missing_df <- data.frame(variable = missing, prct = NA, cohort_id = unique(var_cohort$cohort_id))
-  var_cohort <- bind_rows(var_cohort, as_tibble(missing_df))
-} else if (length(missing) == 0) {
-  missing <- setdiff(var_cohort$variable, var_single$variable)
-  if (length(missing) != 0){
-  missing_df <- data.frame(variable = missing, prct = NA, cohort_id = unique(var_single$cohort_id))
-  var_single <- bind_rows(var_single, as_tibble(missing_df))
+  
+  if (!is.null(exclude_single)){
+    var_single <- df_singlecases %>% select(-contains(exclude_single))
+    var_single <- var_single %>% select(contains(colname_single))
+  } else
+  {
+    var_single <- df_singlecases %>% select(contains(colname_single))
   }
-}
-
-hm_cohort <- ggplot(var_cohort, aes(x = variable, y = cohort_id, fill = prct)) + 
+  
+  #%>% select(-contains("any"))
+  cols <- sapply(var_single, is.logical)
+  var_single[,cols] <- lapply(var_single[,cols], as.numeric)
+  var_single <- colSums(var_single, na.rm = TRUE)
+  var_single <- var_single/nrow(df_singlecases)*100
+  var_single <- as.data.frame(var_single) %>% rownames_to_column()
+  var_single$cohort_id <- paste0("single cases (n = ", n_single_cases,")")
+  colnames(var_single) <- c("variable", "prct", "cohort_id")
+  
+  
+  missing <- setdiff(var_single$variable, var_cohort$variable)
+  if (length(missing) != 0 ){
+    missing_df <- data.frame(variable = missing, prct = NA, cohort_id = unique(var_cohort$cohort_id))
+    var_cohort <- bind_rows(var_cohort, as_tibble(missing_df))
+  } else if (length(missing) == 0) {
+    missing <- setdiff(var_cohort$variable, var_single$variable)
+    if (length(missing) != 0){
+      missing_df <- data.frame(variable = missing, prct = NA, cohort_id = unique(var_single$cohort_id))
+      var_single <- bind_rows(var_single, as_tibble(missing_df))
+    }
+  }
+  
+  hm_cohort <- ggplot(var_cohort, aes(x = variable, y = cohort_id, fill = prct)) + 
     geom_tile() + theme_classic() +
     theme(axis.text.x=element_blank(), axis.ticks.x=element_blank(), axis.line=element_blank())+
-   scale_fill_gradient(low = "yellow", high="red", na.value = "lightgray", limits = c(0,100)) +
+    scale_fill_gradient(low = "yellow", high="red", na.value = "lightgray", limits = c(0,100)) +
     labs(x = "", y = "cohort", title =plottitle) +
     geom_text(aes(label=round(prct, 2)), size = textsize, color = "black")
-
-hm_single <- ggplot(var_single, aes(x = variable, y = cohort_id, fill = prct)) + 
+  
+  hm_single <- ggplot(var_single, aes(x = variable, y = cohort_id, fill = prct)) + 
     geom_tile() +  theme_classic() +
     theme(axis.text.x=element_text(angle=90, hjust=1), axis.line=element_blank())+
     scale_fill_gradient(low = "yellow", high = "red", na.value = "lightgray", limits = c(0,100))+ labs(y = "cohort") +
     geom_text(aes(label=round(prct, 2)), size = textsize, color = "black") 
-
-plot_grid(hm_cohort, hm_single, align = "v", nrow = 2, rel_heights = c(1/2, 1/2))
+  
+  plot_grid(hm_cohort, hm_single, align = "v", nrow = 2, rel_heights = c(2/3, 1/3))
 }
 ```
 
@@ -336,7 +344,7 @@ Search strategy focused on keywords involving the hyperinflammatory presentation
 ```
 
 ## BioRxiv and MedRxiv 
-Literature search in biorxiv and medrxiv was done with the R by downloading the data from the dedicated [COVID-19 SARS-CoV-2 preprints page](https://connect.biorxiv.org/relate/content/181) in json format, and can be found on [Github](https://github.com/rmvpaeme/PIMS_TS/blob/master/preprint_search.R).
+Literature search in biorxiv and medrxiv was done with the R by downloading the data from the dedicated [COVID-19 SARS-CoV-2 preprints page](https://connect.biorxiv.org/relate/content/181) in json format, and can be found on [Github](https://github.com/rmvpaeme/PIMS_MISC_SR/blob/master/preprint_search.R).
 
 
 ## Cochrane COVID-19 study register 
@@ -363,6 +371,7 @@ Inclusion criteria
 3.	Types of study designs: RCT, observational studies, case-control studies, cross-sectional studies, case reports and case series
 
 Exclusion criteria
+
 1.	Studies on adult patients with SARS-CoV-2 infection and/or SARS-CoV-2 associated hyperinflammatory syndromes
 2.	Studies on pediatric patients with other coronavirus infections (SARS-CoV-1 and Middle East Respiratory Syndrome Coronavirus (MERS-CoV) infection or other respiratory infections.
 3.	Studies with incomplete or lacking necessary data 
@@ -374,10 +383,9 @@ Study selection was a two-stage process with, first, titles and abstracts of stu
 
 The Preferred Reporting Items for Systematic Reviews and Meta-Analyses (PRISMA) checklist was used to guide the study selection and extraction process. Risk for bias on eligible observational studies were assessed by LH according to the NewCastle-Ottawa Scale (NOS), with full verification of all judgments by RVP. Level of evidence was rated according to Sackett.
 
-
 # PRISMA flow diagram
 
-![](./plots/PRISMA 2009 flow diagram.png)
+![](./plots/PRISMA 2009 flow diagram - update 082020.png)
 
 # Data extraction
 All original studies describing clinical cases meeting the case definition of PIMS-TS, as defined by RCPCH, were eligible for inclusion. Primary outcome analysis focused on clinical, epidemiological and immunological manifestations, therapeutic management and prognosis.  
@@ -394,16 +402,23 @@ A single reviewer (LH) extracted data using a standardized form, while a second 
 
 Cohort studies and studies reporting on single cases were analysed separately, as we did not have access to the individual case characteristics of the cohort studies.  For the cohort studies, proportions were calculated by summing only the studies which report on the variable, except for rare conditions such as death, comorbidities, use of ECMO or biopharmaceuticals.
 
+We have deliberately used “MIS” concerning the WHO definition (also see Suppl1) since the WHO case definition has always used “MIS” instead of “MIS-C” in its communication. In their “Scientific brief” no abbreviations are used (https://www.who.int/publications/i/item/multisystem-inflammatory-syndrome-in-children-and-adolescents-with-covid-19). While on the WHO website “MIS” is mentioned (https://www.who.int/news-room/commentaries/detail/multisystem-inflammatory-syndrome-in-children-and-adolescents-with-covid-19), as well as in the WHO case report forms (https://www.who.int/docs/default-source/coronaviruse/final--misc-crf-18-may-2020-who.pdf?sfvrsn=8839181a_4) 
+
+# Update between 2020-06-30 and 2020-08-13
+
+Initially, the literature search and data-extraction was performed up to June 30, 2020. Afterwards, an update of the literature search, data-extraction and manuscript was done with studies published between July 1st and August 13th. In this second phase, conflicts during study selection were resolved by discussion between LH and RVP until a consensus was reached, instead of by the third independent third reviewer. For n = 7 studies, RVP extracted the data, while the second reviewer LH cross checked all data for correctness and completeness. No other changes to the literature seach methodology, data-extraction or analysis was done. 
+
+
 # Data import and cleaning
 ## Single cases
-After data collection, we import the single cases from the [general excel sheet]() and transform the excel sheet so that variables are columns and rows are cases. Columns without any values are also removed. 
+After data collection, we import the single cases from the [general excel sheet](https://github.com/rmvpaeme/PIMS_MISC_SR) and transform the excel sheet so that variables are columns and rows are cases. Columns without any values are also removed. 
 
-The single cases from Pouletty (10.1136/annrheumdis-2020-217960) are excluded (as they are included in the cohorts).
+The single cases from Pouletty (10.1136/annrheumdis-2020-217960) are excluded (as they are included in the cohorts, and they only report IL6 data for single cases, which are added to the IL6 figure).
 
 
 ```{r}
 df_singlecases <-
-  read_excel("/Users/rmvpaeme/Onedrive/UGent/PIMS-TS Systematic Review - General/Data extractie/data extractie.xlsx",
+  read_excel("20200903_data_extraction.xlsx",
              sheet = "Single cases",
              skip = 1,
              col_names = FALSE)[,-c(1:2)]
@@ -503,12 +518,12 @@ If any cardiovascular symptoms, symp_cardiovasc_any is annotated as TRUE.
 
 ```{r}
 df_singlecases <- df_singlecases %>% mutate(symp_cardiovasc_any = apply(df_singlecases %>% select(symp_cardiovasc_myocard,
-symp_cardiovasc_pericard,
-symp_cardiovasc_cordilat,
-symp_cardiovasc_aneurysm,
-symp_cardiovasc_shock,
-symp_cardiovasc_tachycard,
-symp_cardiovasc_arrhyt), 1, any))
+                                                                                                  symp_cardiovasc_pericard,
+                                                                                                  symp_cardiovasc_cordilat,
+                                                                                                  symp_cardiovasc_aneurysm,
+                                                                                                  symp_cardiovasc_shock,
+                                                                                                  symp_cardiovasc_tachycard,
+                                                                                                  symp_cardiovasc_arrhyt), 1, any))
 
 df_singlecases <- df_singlecases %>% moveme(., "symp_cardiovasc_any before symp_cardiovasc_myocard")
 
@@ -519,15 +534,15 @@ write.csv(df_singlecases, paste0("./data/df_singlecases.csv"))
 
 
 <button onclick="location.href='https://github.com/rmvpaeme/PIMS_TS/blob/master/data/df_singlecases.csv'" type="button">
-         Download single case data as .csv on Github</button>
-         
+Download single case data as .csv on Github</button>
+
 ## Cohorts
 Afterwards, we do the same for the cohort sheet.
 
 The papers by Grimaud et al. and Verdoni et al. are removed from the cohort dataframe, as most information is present in the single cases dataframe. 
 ```{r}
 df_cohort <-
-  read_excel("/Users/rmvpaeme/Onedrive/UGent/PIMS-TS Systematic Review - General/Data extractie/data extractie.xlsx",
+  read_excel("20200903_data_extraction.xlsx",
              sheet = "Cohorts",
              skip = 1,
              col_names = FALSE)[,-c(1:3)]
@@ -562,7 +577,7 @@ df_cohort <- df_cohort %>% filter(doi != "https://doi.org/10.1186/s13613-020-006
 
 df_cohort_controls <- df_cohort
 
-df_cohort <- df_cohort %>% filter(cohort_type == "covid")
+df_cohort <- df_cohort %>% filter(cohort_type == "MIS-C")
 
 df_cohort$date_of_publication <- as.Date(df_cohort$date_of_publication, origin = "1899-12-30")
 
@@ -572,7 +587,7 @@ write.csv(df_cohort, paste0("./data/df_cohort.csv"))
 ```
 
 <button onclick="location.href='https://github.com/rmvpaeme/PIMS_TS/blob/master/data/df_cohort.csv'" type="button">
-         Download cohort data as .csv on Github</button>
+Download cohort data as .csv on Github</button>
 
 # Descriptive statistics {.tabset}
 ## General
@@ -580,12 +595,10 @@ write.csv(df_cohort, paste0("./data/df_cohort.csv"))
 **Click on the any of the tabs above to see descriptive statistics for every variable**      
 
 ## Single cases
-**How to read**  
-Under "Variable type: logical", the number of true/falses are depicted. E.g. at the top we can see that there are 95 number of rows (= 95 patients). Overweight has 79 missing values (17% is complete), which means that 95-79=16 patients have either "TRUE" or "FALSE" for overweight. Of these 16, 9 are marked as "TRUE" for overweight. 
 
 <button onclick="location.href='https://github.com/rmvpaeme/PIMS_TS/blob/master/data/singlecases_descriptivestats.csv'" type="button">
-         Download data as .csv on Github</button>
-         
+Download data as .csv on Github</button>
+
 
 ```{r}
 #skim(df_singlecases)
@@ -593,13 +606,10 @@ write.csv(skim(df_singlecases), paste0("./data/singlecases_descriptivestats.csv"
 ```
 
 ## Cohorts
-**How to read**  
-The sum column equals the sum of all individuals, e.g. sum(tot_cases_n) means that there are 592 patients in total in the cohorts; sum(outcome_death_n) means that 9 patients died. 
-
-The "Prct_total" column is the percentage of e.g. death (9/592). Only makes sense where n is reported e.g. therapy (not for lab values).
+The "Prct_total" column is the percentage of e.g. death divided by the total cases in the cohort group. Only makes sense where n is reported e.g. therapy (not for lab values).
 
 <button onclick="location.href='https://github.com/rmvpaeme/PIMS_TS/blob/master/data/cohort_descriptivestats.csv'" type="button">
-         Download data as .csv on Github</button>
+Download data as .csv on Github</button>
 
 ```{r}
 skimsum <- skim_with(numeric = sfl(sum = ~ sum(., na.rm = TRUE), Prct_total = ~ sum(., na.rm = TRUE)/sum(df_cohort$tot_cases_n)*100), append = TRUE)
@@ -610,10 +620,10 @@ write.csv(skimsum(df_cohort), paste0("./data/cohort_descriptivestats.csv"))
 ## Historical controls
 
 <button onclick="location.href='https://github.com/rmvpaeme/PIMS_TS/blob/master/data/historicalcontrols_descriptivestats.csv'" type="button">
-         Download data as .csv on Github</button>
-         
+Download data as .csv on Github</button>
+
 ```{r}
-df_cohort_controls_stats <- df_cohort_controls %>% filter(cohort_type == "control")
+df_cohort_controls_stats <- df_cohort_controls %>% filter(cohort_type != "MIS-C")
 df_cohort_controls_stats <- df_cohort_controls_stats[colSums(!is.na(df_cohort_controls_stats)) > 0]
 skimsum <- skim_with(numeric = sfl(sum = ~ sum(., na.rm = TRUE), Prct_total = ~ sum(., na.rm = TRUE)/sum(df_cohort_controls_stats$tot_cases_n)*100), append = TRUE)
 #skimsum(df_cohort_controls_stats)
@@ -641,9 +651,9 @@ Caveat: this is a distored image of the PIMS cases: as the cases are published t
 ```{r}
 
 firstdiff <- function(x) {
-   shifted <- c(0,x[1:(length(x)-1)])
-   x-shifted
-   }
+  shifted <- c(0,x[1:(length(x)-1)])
+  x-shifted
+}
 
 USA_cases <- read_csv("./data/time_series_covid19_confirmed_US.csv")
 USA_cases <- USA_cases %>% select(-c(UID, iso2, iso3, code3, FIPS, Admin2, Province_State, Lat, Long_, Combined_Key))
@@ -664,7 +674,7 @@ all_glob_cases$newcases <- firstdiff(all_glob_cases$total_cases)
 all_glob_cases$newcase_roll7 <- zoo::rollmean(all_glob_cases$newcases, k = 7, fill = NA)
 
 evo_cases <- rbind(df_cohort %>% select(tot_cases_n, date_of_publication) %>% mutate(type = "cohort"), 
-df_singlecases %>% select(date_of_publication) %>% mutate(tot_cases_n = 1, type = "single"))
+                   df_singlecases %>% select(date_of_publication) %>% mutate(tot_cases_n = 1, type = "single"))
 
 evo_cases <- pad(evo_cases)
 evo_cases$tot_cases_n[is.na(evo_cases$tot_cases_n)] <- 0
@@ -673,9 +683,9 @@ evo_cases$cumplot <- cumsum(evo_cases$tot_cases_n)
 full_data <- merge(evo_cases, all_glob_cases, all = TRUE)
 
 p1 <- ggplot(full_data , aes(x = date_of_publication, y = cumplot)) +
-        geom_col(position = "dodge", col = wes_palette("Royal1")[2], fill = wes_palette("Royal1")[2]) + 
-        theme_bw() + geom_line(aes(x = date_of_publication, y = newcase_roll7/175)) +
-        labs(x = "Date", y = "cumulative number of cases", title = "Number of published cases") +  scale_x_date(limits = as.Date(c('2020-01-15','2020-07-01'))) + scale_y_continuous(
+  geom_col(position = "dodge", col = wes_palette("Royal1")[2], fill = wes_palette("Royal1")[2]) + 
+  theme_bw() + geom_line(aes(x = date_of_publication, y = newcase_roll7/175)) +
+  labs(x = "Date", y = "cumulative number of cases", title = "Number of published cases") +  scale_x_date(limits = as.Date(c('2020-01-15','2020-08-14'))) + scale_y_continuous(
     "cumulative number of published cases", 
     sec.axis = sec_axis(~ . * 175, name = "new COVID-19 cases (7-day average)")
   )
@@ -698,7 +708,7 @@ all_glob_cases <- all_glob_cases %>% group_by(country) %>%
 all_glob_cases <- all_glob_cases %>% group_by(country)  %>% mutate(newcase_roll7 = zoo::rollmean(newcases, k = 7, fill = NA)) 
 
 evo_cases <- rbind(df_cohort %>% select(tot_cases_n, date_of_publication, country) %>% mutate(type = "cohort"), 
-df_singlecases %>% select(date_of_publication, country) %>% mutate(tot_cases_n = 1, type = "single"))
+                   df_singlecases %>% select(date_of_publication, country) %>% mutate(tot_cases_n = 1, type = "single"))
 
 country_barplot <- evo_cases
 
@@ -715,17 +725,17 @@ full_data_filt <- full_data %>% filter(country == "United Kingdom"  | country ==
 full_data_filt <- full_data_filt %>% mutate(continent = ifelse(country == "US", "US", "Europe"))
 
 p1 <- ggplot(full_data_filt , aes(x = date_of_publication, y = cumplot)) +
-        geom_col(position = "dodge", aes(fill = country, col = country)) + 
-        theme_bw() + 
-        scale_color_manual(values = wes_palette("Darjeeling2")[c(1,3,4,2)]) +
+  geom_col(position = "dodge", aes(fill = country, col = country)) + 
+  theme_bw() + 
+  scale_color_manual(values = wes_palette("Darjeeling2")[c(1,3,4,2)]) +
   scale_fill_manual(values = wes_palette("Darjeeling2")[c(1,3,4,2)]) +
-        geom_line(aes(x = date_of_publication, y = newcase_roll7/100, col = country)) +
-        labs(x = "Date", y = "cumulative number of cases (bars)", title = "Number of published cases, per country") +
-        scale_x_date(limits = as.Date(c('2020-03-01','2020-07-01'))) + scale_y_continuous(    "cumulative number of published cases (bars)", 
-    sec.axis = sec_axis(~ . * 100, name = "new COVID-19 cases (7-day average, lines)") 
+  geom_line(aes(x = date_of_publication, y = newcase_roll7/100, col = country)) +
+  labs(x = "Date", y = "cumulative number of cases (bars)", title = "Number of published cases, per country") +
+  scale_x_date(limits = as.Date(c('2020-03-01','2020-08-14'))) + scale_y_continuous(    "cumulative number of published cases (bars)", 
+                                                                                        sec.axis = sec_axis(~ . * 100, name = "new COVID-19 cases (7-day average, lines)") 
   ) + 
-      theme(legend.position="bottom") + 
-      facet_wrap(~continent, scales = "free_y")
+  theme(legend.position="bottom") + 
+  facet_wrap(~continent, scales = "free_y")
 
 p1
 
@@ -740,10 +750,11 @@ ggsave(p1, filename = "./plots/covid_evo_percountry.pdf", dpi = 300, height=7, w
 ```{r}
 
 ggplot(country_barplot, aes(x = reorder(country, -tot_cases_n), y = tot_cases_n, fill = type)) + 
-        geom_bar(stat = 'identity') +
-        theme_bw() +
-        scale_fill_manual(values = wes_palette("Royal1")) + 
-        labs(x = "Country", y = "Total cases", title = "Cases per countries in dataset")
+  geom_bar(stat = 'identity') +
+  theme_bw() +
+  scale_fill_manual(values = wes_palette("Royal1")) + 
+  labs(x = "Country", y = "Total cases", title = "Cases per countries in dataset") + 
+  theme(axis.text.x=element_text(angle=90, hjust=1))
 
 ```
 
@@ -756,7 +767,7 @@ ggplot(country_barplot, aes(x = reorder(country, -tot_cases_n), y = tot_cases_n,
 makeBarplot("outcome_death_n", "outcome_death", "deaths")
 ```
 
-## Sex
+## Sex and age distribution
 ```{r}
 n_cohort <- df_cohort %>% select(tot_cases_n) %>% sum()
 var_cohort <- df_cohort %>% select(contains("sex"))
@@ -764,9 +775,9 @@ var_cohort <- colSums(var_cohort, na.rm = TRUE)
 var_cohort <- var_cohort/sum(df_cohort$tot_cases_n)*100
 var_cohort["sex_na"] <- (100 - var_cohort["sex_m"] - var_cohort["sex_f"])
 
-var_control <- df_cohort_controls %>% filter(cohort_id == "Pouletty - control") %>% select(contains("sex"))
+var_control <- df_cohort_controls %>% filter(cohort_id == "Pouletty - histor. KD") %>% select(contains("sex"))
 var_control <- colSums(var_control, na.rm = TRUE)
-var_control <- var_control/sum(df_cohort_controls %>% filter(cohort_id == "Pouletty - control") %>% select(tot_cases_n))*100
+var_control <- var_control/sum(df_cohort_controls %>% filter(cohort_id == "Pouletty - histor. KD") %>% select(tot_cases_n))*100
 var_control["sex_na"] <- (100 - var_control["sex_m"] - var_control["sex_f"])
 
 n_single <- df_singlecases %>% nrow()
@@ -783,12 +794,12 @@ bar_df_prct <- data.frame(
   x = c("males", "females", "missing", "males", "females", "missing", "males", "females", "missing"),
   vals = c(var_single, var_cohort, var_control),
   col = c(rep("single", length(var_single)), rep("cohorts", length(var_cohort)), rep("histor ctrl", length(var_control))
-))
+  ))
 
 p_prct <- ggplot(bar_df_prct, aes(x = col, y =  vals, fill = x)) +
-    geom_bar(stat = "identity", position = "stack") +
-    theme_bw() + 
-    labs(title = "Male/female distribution in dataset", subtitle = "Prct", x = "sex", y = "%", col = " ")  + lims(y = c(0,100)) + theme(axis.text.x=element_text(angle=90, hjust=1))+
+  geom_bar(stat = "identity", position = "stack") +
+  theme_bw() + 
+  labs(title = "Male/female distribution in dataset", subtitle = "Percent", x = "sex", y = "%", col = " ")  + lims(y = c(0,100)) + theme(axis.text.x=element_text(angle=90, hjust=1), legend.title = element_blank())+
   scale_fill_manual(values = wes_palette("Royal1"))
 p_prct
 ```
@@ -801,19 +812,19 @@ sex_m <- var_cohort %>% group_by(cohort_id) %>% summarize(prct = sex_m/tot_cases
 sex_all <- rbind(sex_f, sex_m)
 
 p_sex_cohort <- ggplot(sex_all, aes(y = cohort_id, x = prct, fill = sex)) + 
-          geom_bar(stat = "identity", position = "fill") + 
-          theme_bw() + labs(x = "") + 
-          scale_fill_manual(values = wes_palette("Royal1"))
+  geom_bar(stat = "identity", position = "fill") + 
+  theme_bw() + labs(x = "") + 
+  scale_fill_manual(values = wes_palette("Royal1"))
 
-var_controls <- df_cohort_controls %>% filter(cohort_id == "Pouletty - control") %>% select(contains("sex") | ("cohort_id") | "tot_cases_n")
+var_controls <- df_cohort_controls %>% filter(cohort_id == "Pouletty - histor. KD") %>% select(contains("sex") | ("cohort_id") | "tot_cases_n")
 sex_f <- var_controls %>% group_by(cohort_id) %>% summarize(prct = sex_f/tot_cases_n) %>% mutate(sex = "female")
 sex_m <- var_controls %>% group_by(cohort_id) %>% summarize(prct = sex_m/tot_cases_n) %>% mutate(sex = "male")
 sex_all <- rbind(sex_f, sex_m)
 
 p_sex_controls <- ggplot(sex_all, aes(y = cohort_id, x = prct, fill = sex)) + 
-          geom_bar(stat = "identity", position = "fill") + 
-          theme_bw() + labs(x = "") + 
-          scale_fill_manual(values = wes_palette("Royal1"))
+  geom_bar(stat = "identity", position = "fill") + 
+  theme_bw() + labs(x = "") + 
+  scale_fill_manual(values = wes_palette("Royal1"))
 
 n_single <- df_singlecases %>% nrow()
 var_single <- df_singlecases %>% select(contains("sex"))
@@ -827,17 +838,14 @@ var_single <- var_single/nrow(df_singlecases)*100
 sex_single <- data.frame(cohort_id = "single_cases", prct = c(var_single["sex_m"], var_single["sex_f"]), sex = c("male", "female"))
 
 p_sex_single <- ggplot(sex_single, aes(y = cohort_id, x = prct, fill = sex)) + 
-          geom_bar(stat = "identity", position = "fill") + 
-          theme_bw() + 
-          scale_fill_manual(values = wes_palette("Royal1"))
+  geom_bar(stat = "identity", position = "fill") + 
+  theme_bw() + 
+  scale_fill_manual(values = wes_palette("Royal1"))
 
 a <- plot_grid(p_sex_cohort, p_sex_controls, p_sex_single, align = "v", nrow = 3, rel_heights = c(5/7, 1/7, 1/7))
-a
 ```
 
-## Age distribution
-
-```{r}
+```{r, fig.height= 8, fig.width= 6}
 cohort_age <- df_cohort_controls %>% select(contains("cohort_id") | contains("age") | contains("cohort_type")  | contains("tot_cases_n"))
 cohort_age$cohort_id <- paste0(cohort_age$cohort_id, " (n = ", cohort_age$tot_cases_n,")")
 cohort_age$age_med_yrs <- as.numeric(cohort_age$age_med_yrs )
@@ -848,34 +856,34 @@ cohort_age$age_max_yrs <- as.numeric(cohort_age$age_max_yrs)
 
 cohort_age$data_descr <- ifelse(!is.na(cohort_age$age_Q1_yrs) & is.na(cohort_age$age_min_yrs) , "IQR", 
                                 ifelse(is.na(cohort_age$age_Q1_yrs) & !is.na(cohort_age$age_min_yrs), "range", 
-                                    ifelse(!is.na(cohort_age$age_Q1_yrs) & !is.na(cohort_age$age_min_yrs), "both", "none")))
+                                       ifelse(!is.na(cohort_age$age_Q1_yrs) & !is.na(cohort_age$age_min_yrs), "both", "none")))
 
-p_age_cohort <- ggplot(cohort_age %>% filter(cohort_type == "covid"), aes(y = cohort_id, x = age_med_yrs, col = data_descr)) + 
-        geom_point(size = 4) + 
-        geom_errorbar(aes(xmin=age_Q1_yrs, xmax=age_Q3_yrs), width=.8, position=position_dodge(.9)) +
-        geom_errorbar(aes(xmin=age_min_yrs,  xmax=age_max_yrs), width=.2, position=position_dodge(.9)) +
-        theme_bw() + lims(x = c(0,21)) + 
-        labs(y = "cohort", x = "", col = "bars") + theme(legend.position="top")+
-        scale_color_manual(values = c(wes_palette("BottleRocket2")[1:3], wes_palette("BottleRocket1")[2]))
+p_age_cohort <- ggplot(cohort_age %>% filter(cohort_type == "MIS-C"), aes(y = cohort_id, x = age_med_yrs, col = data_descr)) + 
+  geom_point(size = 4) + 
+  geom_errorbar(aes(xmin=age_Q1_yrs, xmax=age_Q3_yrs), width=.8, position=position_dodge(.9)) +
+  geom_errorbar(aes(xmin=age_min_yrs,  xmax=age_max_yrs), width=.2, position=position_dodge(.9)) +
+  theme_bw() + lims(x = c(0,21)) + 
+  labs(y = "cohort", x = "", col = "bars") + theme(legend.position="top")+
+  scale_color_manual(values = c(wes_palette("BottleRocket2")[1:3], wes_palette("BottleRocket1")[2]))
 
-p_age_controls <- ggplot(cohort_age %>% filter(cohort_type != "covid"), aes(y = cohort_id, x = age_med_yrs, col = data_descr)) + 
-        geom_point(size = 4) + 
-        geom_errorbar(aes(xmin=age_Q1_yrs, xmax=age_Q3_yrs), width=.2, position=position_dodge(.9)) +
-        geom_errorbar(aes(xmin=age_min_yrs,  xmax=age_max_yrs), width=.2, position=position_dodge(.9)) +
-        theme_bw() + lims(x = c(0,21)) +
-        labs(y = "cohort", x = "", col = "bars") + theme(legend.position="none")+
-        scale_color_manual(values = wes_palette("BottleRocket2")[2])
+p_age_controls <- ggplot(cohort_age %>% filter(cohort_type != "MIS-C"), aes(y = cohort_id, x = age_med_yrs, col = data_descr)) + 
+  geom_point(size = 4) + 
+  geom_errorbar(aes(xmin=age_Q1_yrs, xmax=age_Q3_yrs), width=.2, position=position_dodge(.9)) +
+  geom_errorbar(aes(xmin=age_min_yrs,  xmax=age_max_yrs), width=.2, position=position_dodge(.9)) +
+  theme_bw() + lims(x = c(0,21)) +
+  labs(y = "cohort", x = "", col = "bars") + theme(legend.position="none")+
+  scale_color_manual(values = wes_palette("BottleRocket2")[2])
 
 p_age_single <- ggplot(df_singlecases, aes(x = as.numeric(age), y = paste0("single cases (n = ", n_single,")"))) +
-      geom_violin(fill = wes_palette("Darjeeling2")[4]) + 
-      geom_boxplot(width=.3, fill = wes_palette("Darjeeling2")[1]) + 
-      theme_bw() + geom_beeswarm(groupOnX=FALSE, alpha = 0.5) + lims(x = c(0,21)) + 
-      labs(y = "cohort", x = "Age (years)")
+  geom_violin(fill = wes_palette("Darjeeling2")[4]) + 
+  geom_boxplot(width=.3, fill = wes_palette("Darjeeling2")[1]) + 
+  theme_bw() + geom_beeswarm(groupOnX=FALSE, alpha = 0.5) + lims(x = c(0,21)) + 
+  labs(y = "cohort", x = "Age (years)")
 
 a <- plot_grid(p_age_cohort, p_age_controls, p_age_single, align = "v", nrow = 3, rel_heights = c(2/3, 1/5, 1/3))
-a
 ```
 
+![](./plots/demo_grid_plots.png)
 
 ## Symptoms 
 ### Single cases {.tabset}
@@ -884,16 +892,16 @@ Where applicable, overlap of variable in the single case group was summarized wi
 
 ```{r}
 makeUpsetR <- function(input_df){
-var_single <- input_df 
-cols <- sapply(var_single, is.logical)
-var_single[,cols] <- lapply(var_single[,cols], as.numeric)
-
-var_single_upsetr <- var_single 
-var_single_upsetr[is.na(var_single_upsetr)] <- 0
-var_single_upsetr <- as.data.frame(var_single_upsetr)
-for(i in 1:ncol(var_single_upsetr)){ var_single_upsetr[ , i] <- as.integer(var_single_upsetr[ , i]) }
-upset(var_single_upsetr, sets = c(colnames(var_single_upsetr)), sets.bar.color = "#56B4E9",
-order.by = "freq", keep.order = TRUE)#, empty.intersections = "on", keep.order = FALSE)
+  var_single <- input_df 
+  cols <- sapply(var_single, is.logical)
+  var_single[,cols] <- lapply(var_single[,cols], as.numeric)
+  
+  var_single_upsetr <- var_single 
+  var_single_upsetr[is.na(var_single_upsetr)] <- 0
+  var_single_upsetr <- as.data.frame(var_single_upsetr)
+  for(i in 1:ncol(var_single_upsetr)){ var_single_upsetr[ , i] <- as.integer(var_single_upsetr[ , i]) }
+  upset(var_single_upsetr, sets = c(colnames(var_single_upsetr)), sets.bar.color = "#56B4E9",
+        order.by = "freq", keep.order = TRUE)#, empty.intersections = "on", keep.order = FALSE)
 }
 
 makeUpsetR(df_singlecases %>% select(contains( "symp")) %>% select(contains("any")))
@@ -916,54 +924,58 @@ makeUpsetR(df_singlecases %>% select(contains("symp")) %>% select(contains("GI")
 
 ### Single cases + cohort {.tabset}
 #### Respiratory
-```{r}
+```{r, fig.height = 8, fig.width= 6}
 barSymp <- function(colname_chort, colname_single, exclude_single = NULL, plottitle){
-
-var_cohort <- df_cohort %>% 
-                        select(contains("cohort_id") | contains("tot_cases_n") | (contains(colname_chort) & contains("_n")))
-
-var_cohort <- var_cohort %>% 
-        gather(variable, value, 3:ncol(var_cohort)) %>% 
-        drop_na(value)  %>% group_by(variable) %>% 
-        summarize(prct = sum(value)/sum(tot_cases_n)*100)
-
-var_cohort <- setNames(var_cohort$prct, var_cohort$variable)
-names(var_cohort) <- sub("_n", "", names(var_cohort))
-
-n_single <- df_singlecases %>% nrow()
-
-if (!is.null(exclude_single)){
-  var_single <- df_singlecases %>% select(-contains(exclude_single))
-  var_single <- var_single %>% select(contains(colname_single))
-} else
-{
-  var_single <- df_singlecases %>% select(contains(colname_single))
-}
-
- #%>% select(-contains("any"))
-cols <- sapply(var_single, is.logical)
-var_single[,cols] <- lapply(var_single[,cols], as.numeric)
-var_single <- colSums(var_single, na.rm = TRUE)
-var_single <- var_single/nrow(df_singlecases)*100
-
-bar_df_prct <- data.frame(
-  x = c(names(var_single), names(var_cohort)),
-  vals = c(var_single, var_cohort),
-  col = c(rep("single", length(var_single)), rep("cohorts", length(var_cohort)))
-)
-
-p_prct <- ggplot(bar_df_prct, aes(x = x, y =  vals, fill = col)) +
+  
+  var_cohort <- df_cohort %>% 
+    select(contains("cohort_id") | contains("tot_cases_n") | (contains(colname_chort) & contains("_n")))
+  
+  var_cohort <- var_cohort %>% 
+    gather(variable, value, 3:ncol(var_cohort)) %>% 
+    drop_na(value)  %>% group_by(variable) %>% 
+    summarize(prct = sum(value)/sum(tot_cases_n)*100)
+  
+  var_cohort <- setNames(var_cohort$prct, var_cohort$variable)
+  names(var_cohort) <- sub("_n", "", names(var_cohort))
+  
+  n_single <- df_singlecases %>% nrow()
+  
+  if (!is.null(exclude_single)){
+    var_single <- df_singlecases %>% select(-contains(exclude_single))
+    var_single <- var_single %>% select(contains(colname_single))
+  } else
+  {
+    var_single <- df_singlecases %>% select(contains(colname_single))
+  }
+  
+  #%>% select(-contains("any"))
+  cols <- sapply(var_single, is.logical)
+  var_single[,cols] <- lapply(var_single[,cols], as.numeric)
+  var_single <- colSums(var_single, na.rm = TRUE)
+  var_single <- var_single/nrow(df_singlecases)*100
+  
+  bar_df_prct <- data.frame(
+    x = c(names(var_single), names(var_cohort)),
+    vals = c(var_single, var_cohort),
+    col = c(rep("single", length(var_single)), rep("cohorts", length(var_cohort)))
+  )
+  
+  p_prct <- ggplot(bar_df_prct, aes(x = x, y =  vals, fill = col)) +
     geom_bar(stat = "identity", position = "dodge") +
     theme_bw() + 
     labs(title = plottitle, 
-          subtitle = "Percent of group", x = "treatment", y = "%", col = " ")  + 
-          theme(axis.text.x=element_text(angle=90, hjust=1))+
-          scale_fill_manual(values = wes_palette("Royal1"))
-p_prct
+         subtitle = "Percent of group", x = "treatment", y = "%", col = " ")  + 
+    theme(axis.text.x=element_text(angle=90, hjust=1), legend.title = element_blank())+
+    scale_fill_manual(values = wes_palette("Royal1"))
+  p_prct
 }
+```
 
+```{r fig.height = 8, fig.width= 6}
 makeHeatmap_cohort("symp_resp", "symp_resp", plottitle = "Cases with respiratory symptoms, per cohort")
+```
 
+```{r}
 barSymp("symp_resp", "symp_resp", plottitle = "Cases with respiratory symptoms")
 ```
 
@@ -978,21 +990,25 @@ barSymp("symp_resp", "symp_resp", plottitle = "Cases with respiratory symptoms")
 ```
 
 #### Cardiovascular
-```{r}
+```{r fig.height = 8, fig.width= 8}
 makeHeatmap_cohort("symp_cardiovasc", "symp_cardiovasc", exclude_single = "symp_cardiovasc_LVEF", plottitle = "Cases with cardiovascular symptoms, per cohort")
+```
 
+```{r}
 barSymp("symp_cardiovasc", "symp_cardiovasc", exclude_single = "symp_cardiovasc_LVEF", plottitle = "Cases with cardiovascular symptoms")
 ```
 
 #### Gastro-intestinal
-```{r}
+```{r fig.height = 8, fig.width= 6}
 makeHeatmap_cohort("symp_GI", "symp_GI", plottitle = "Cases with GI symptoms, per cohort")
+```
 
+```{r}
 barSymp("symp_GI", "symp_GI", plottitle = "Cases with GI symptoms")
 ```
 
 ## COVID contact
-```{r}
+```{r, fig.height = 8, fig.width= 8}
 var_cohort <- df_cohort %>% select(("cohort_id" | "tot_cases_n") | ( contains("covid") & contains("_n") & (contains("pos") | contains("closecont")  | contains("any"))))
 var_cohort$cohort_id <- paste0(var_cohort$cohort_id, " (n = ", as.character(var_cohort$tot_cases_n),")")
 
@@ -1021,37 +1037,37 @@ missing <- setdiff(var_cohort$variable, var_single$variable)
 
 if (length(missing) != 0) {
   if (length(missing) != 0){
-data.frame(variable = missing, prct = rep(NA, length(missing)), cohort_id = rep(unique(var_single$cohort_id), length(missing)))
-  var_single <- bind_rows(var_single, as_tibble(missing_df))
+    data.frame(variable = missing, prct = rep(NA, length(missing)), cohort_id = rep(unique(var_single$cohort_id), length(missing)))
+    var_single <- bind_rows(var_single, as_tibble(missing_df))
   }
 }
 
 
 hm_cohort <- ggplot(var_cohort, aes(x = variable, y = cohort_id, fill = prct)) + 
-    geom_tile() + theme_classic() +
-    theme(axis.text.x=element_blank(), axis.ticks.x=element_blank(), axis.line=element_blank())+
-   scale_fill_gradient(low = "yellow", high="red", na.value = "lightgray", limits = c(0,100)) +
-    labs(x = "", y = "cohort", title = "COVID symptoms, per cohort") +
-    geom_text(aes(label=round(prct, 2)), size = 3, color = "black")
+  geom_tile() + theme_classic() +
+  theme(axis.text.x=element_blank(), axis.ticks.x=element_blank(), axis.line=element_blank())+
+  scale_fill_gradient(low = "yellow", high="red", na.value = "lightgray", limits = c(0,100)) +
+  labs(x = "", y = "cohort", title = "COVID symptoms, per cohort") +
+  geom_text(aes(label=round(prct, 2)), size = 3, color = "black")
 
 hm_single <- ggplot(var_single, aes(x = variable, y = cohort_id, fill = prct)) + 
-    geom_tile() +  theme_classic() +
-    theme(axis.text.x=element_text(angle=90, hjust=1), axis.line=element_blank())+
-    scale_fill_gradient(low = "yellow", high = "red", na.value = "lightgray", limits = c(0,100))+ labs(y = "cohort") +
-    geom_text(aes(label=round(prct, 2)), size = 3, color = "black") 
+  geom_tile() +  theme_classic() +
+  theme(axis.text.x=element_text(angle=90, hjust=1), axis.line=element_blank())+
+  scale_fill_gradient(low = "yellow", high = "red", na.value = "lightgray", limits = c(0,100))+ labs(y = "cohort") +
+  geom_text(aes(label=round(prct, 2)), size = 3, color = "black") 
 
-plot_grid(hm_cohort, hm_single, align = "v", nrow = 2, rel_heights = c(1/2, 1/2))
+plot_grid(hm_cohort, hm_single, align = "v", nrow = 2, rel_heights = c(2/3, 1/3))
 
 ```
 
 ```{r}
 var_cohort <- df_cohort %>% 
-                        select(contains("cohort_id") | contains("tot_cases_n") | contains("covid") & contains("_n") & (contains("_pos") | contains("close")))
+  select(contains("cohort_id") | contains("tot_cases_n") | contains("covid") & contains("_n") & (contains("_pos") | contains("close")))
 
 covid_cohort <- var_cohort %>% 
-        gather(variable, value, 3:ncol(var_cohort)) %>% 
-        drop_na(value)  %>% group_by(variable) %>% 
-        summarize(prct = sum(value)/sum(tot_cases_n)*100)
+  gather(variable, value, 3:ncol(var_cohort)) %>% 
+  drop_na(value)  %>% group_by(variable) %>% 
+  summarize(prct = sum(value)/sum(tot_cases_n)*100)
 
 covid_cohort <- setNames(covid_cohort$prct, covid_cohort$variable)
 
@@ -1072,12 +1088,12 @@ bar_df_prct <- data.frame(
 )
 
 p_prct <- ggplot(bar_df_prct, aes(x = x, y =  vals, fill = col)) +
-    geom_bar(stat = "identity", position = "dodge") +
-    theme_bw() + 
-    labs(title = "SARS-CoV2 testing", 
-         subtitle = "Prct", x = "variable", y = "%", col = " ") +
-    theme(axis.text.x=element_text(angle=90, hjust=1)) +
-    scale_fill_manual(values = wes_palette("Royal1"))
+  geom_bar(stat = "identity", position = "dodge") +
+  theme_bw() + 
+  labs(title = "SARS-CoV2 testing", 
+       subtitle = "Prct", x = "variable", y = "%", col = " ") +
+  theme(axis.text.x=element_text(angle=90, hjust=1)) +
+  scale_fill_manual(values = wes_palette("Royal1"))
 #p_prct
 
 neither_PCR_Ig <- nrow(df_singlecases %>% filter((covid_sero_any == FALSE | is.na(covid_sero_any)) & (covid_PCR_pos == FALSE | is.na(covid_PCR_pos)) & (covid_PCR_stool_pos == FALSE | is.na(covid_PCR_stool_pos))))
@@ -1099,9 +1115,11 @@ print(paste0("Cases with neither PCR nor serology nor closecontact: ", neither_P
 
 ## Kawasaki criteria
 
-```{r}
+```{r fig.height = 8, fig.width= 8}
 makeHeatmap_cohort("kawasaki", "kawasaki",exclude_single = "koyobas", plottitle = "Cases with kawasaki symptoms, per cohort")
+```
 
+```{r fig.height = 4, fig.width= 6}
 barSymp("kawasaki", "kawasaki", exclude_single = "koyobas", plottitle = "Kawasaki symptoms")
 ```
 
@@ -1121,21 +1139,23 @@ crp_collapse_single <- collapse_labvals_single(df_singlecases, "max", "CRP")
 crp_missing <- sum(is.na(crp_collapse_single$CRP_max))
 
 p_crp_cohort <- ggplot(crp_collapse_cohort, aes(y = cohort_id, x = CRP_med, col = cohort_type)) + 
-        geom_point() +  
-        geom_errorbar(aes(xmin=CRP_min, xmax=CRP_max), width=.2, position=position_dodge(.9)) + lims(x = c(0,600)) + 
-        theme_bw() + labs(title = "CRP", y = "cohort", x = "") +
-        geom_vline(xintercept = co_CRP, linetype = "dashed", color = "black") + theme(legend.justification = c(1, 1), legend.position = c(0.98, 0.98), legend.title=element_blank()) +
-        scale_color_manual(values = wes_palette("Royal1"))
+  geom_point() +  
+  geom_errorbar(aes(xmin=CRP_min, xmax=CRP_max), width=.2, position=position_dodge(.9)) + lims(x = c(0,600)) + 
+  theme_bw() + labs(title = "CRP", y = "cohort", x = "") +
+  geom_vline(xintercept = co_CRP, linetype = "dashed", color = "black") + theme(legend.justification = c(1, 1), legend.position = c(0.98, 0.98), legend.title=element_blank()) +
+  scale_color_manual(values = wes_palette("Royal1")[c(4,2,1)])
 
 p_crp_single <- ggplot(crp_collapse_single, aes(x = as.numeric(CRP_max), y = cohort_id)) +
-      geom_violin(fill = wes_palette("Darjeeling2")[4]) + 
-      geom_boxplot(width=.3, fill =  wes_palette("Darjeeling2")[1]) + 
-      theme_bw() + geom_beeswarm(groupOnX=FALSE, alpha = 0.5) + lims(x = c(0,600)) + labs(y = "", x = "CRP (mg/dL)", subtitle = paste0("missing data for ", crp_missing, " cases")) +
-      geom_hline(yintercept = co_CRP, linetype = "dashed", color = "black")
+  geom_violin(fill = wes_palette("Darjeeling2")[4]) + 
+  geom_boxplot(width=.3, fill =  wes_palette("Darjeeling2")[1]) + 
+  theme_bw() + geom_beeswarm(groupOnX=FALSE, alpha = 0.5) + lims(x = c(0,600)) + labs(y = "", x = "CRP (mg/dL)", subtitle = paste0("missing data for ", crp_missing, " cases")) +
+  geom_hline(yintercept = co_CRP, linetype = "dashed", color = "black")
 
 CRP_grid <- plot_grid(p_crp_cohort, p_crp_single, align = "v", nrow = 2, rel_heights = c(2/3, 1/3))
 CRP_grid
 ```
+
+The number of single cases with elevated CRP: `r crp_collapse_single %>% filter(!is.na(CRP_max) & CRP_max >= co_CRP) %>% nrow()` out of total cases (= total cases minus missing cases): `r crp_collapse_single %>% nrow() - crp_missing`
 
 ### Lymphocytes
 ```{r}
@@ -1144,24 +1164,26 @@ lympho_collapse_single <- collapse_labvals_single(df_singlecases, "min", "lympho
 lympho_missing <- sum(is.na(lympho_collapse_single$lympho_min))
 
 p_lympho_cohort <- ggplot(lympho_collapse_cohort, aes(y = cohort_id, x = lympho_med, col = cohort_type)) + 
-        geom_point() +  
-        geom_errorbar(aes(xmin=lympho_min, xmax=lympho_max), width=.2, position=position_dodge(.9)) + 
-        theme_bw() + labs(title = "lymphocytes", y = "", x = "") + lims(x = c(0,7500))  +
-         geom_vline(xintercept = co_lympho, linetype = "dashed", color = "black") + theme(legend.justification = c(1, 1), legend.position = c(0.98, 0.98), legend.title=element_blank()) +
-        scale_color_manual(values = wes_palette("Royal1"))#+
-        #rremove("y.text") 
+  geom_point() +  
+  geom_errorbar(aes(xmin=lympho_min, xmax=lympho_max), width=.2, position=position_dodge(.9)) + 
+  theme_bw() + labs(title = "lymphocytes", y = "", x = "") + lims(x = c(0,7500))  +
+  geom_vline(xintercept = co_lympho, linetype = "dashed", color = "black") + theme(legend.justification = c(1, 1), legend.position = c(0.98, 0.98), legend.title=element_blank()) +
+  scale_color_manual(values = wes_palette("Royal1")[c(4,2,1)])#+
+#rremove("y.text") 
 
 p_lympho_single <- ggplot(lympho_collapse_single, aes(x = as.numeric(lympho_min), y = cohort_id)) +
-      geom_violin(fill = wes_palette("Darjeeling2")[4]) + 
-      geom_boxplot(width=.3, fill = wes_palette("Darjeeling2")[1]) + 
-      lims(x = c(0,7500))+
-      theme_bw() + geom_beeswarm(groupOnX=FALSE, alpha = 0.5)  + labs(y = "", x = "Lymphocytes (/µL)", subtitle = paste0("missing data for ", lympho_missing, " cases")) +
-      geom_vline(xintercept = co_lympho, linetype = "dashed", color = "black") #+ 
-      #rremove("y.text") 
+  geom_violin(fill = wes_palette("Darjeeling2")[4]) + 
+  geom_boxplot(width=.3, fill = wes_palette("Darjeeling2")[1]) + 
+  lims(x = c(0,7500))+
+  theme_bw() + geom_beeswarm(groupOnX=FALSE, alpha = 0.5)  + labs(y = "", x = "Lymphocytes (/µL)", subtitle = paste0("missing data for ", lympho_missing, " cases")) +
+  geom_vline(xintercept = co_lympho, linetype = "dashed", color = "black") #+ 
+#rremove("y.text") 
 
 lympho_grid <- plot_grid(p_lympho_cohort, p_lympho_single, align = "v", nrow = 2, rel_heights = c(2/3, 1/3))
 lympho_grid
 ```
+
+The number of single cases with lymphopenia: `r lympho_collapse_single %>% filter(!is.na(lympho_min) & lympho_min <= co_lympho) %>% nrow()` out of total cases (= total cases minus missing cases): `r lympho_collapse_single %>% nrow() - lympho_missing`
 
 ### White blood cells
 ```{r}
@@ -1170,21 +1192,23 @@ wbc_collapse_single <- collapse_labvals_single(df_singlecases, "max", "WBC")
 wbc_missing <- sum(is.na(wbc_collapse_single$WBC_max))
 
 p_wbc_cohort <- ggplot(wbc_collapse_cohort, aes(y = cohort_id, x = WBC_med, col = cohort_type)) + 
-        geom_point() +  
-        geom_errorbar(aes(xmin=WBC_min, xmax=WBC_max), width=.2, position=position_dodge(.9)) + lims(x = c(0,50000)) + 
-        theme_bw() + labs(title = "WBC", y = "cohort", x = "")  +
-        geom_vline(xintercept = co_WBC, linetype = "dashed", color = "black")  + theme(legend.justification = c(1, 1), legend.position = c(0.98, 0.98), legend.title=element_blank()) +
-        scale_color_manual(values = wes_palette("Royal1"))
+  geom_point() +  
+  geom_errorbar(aes(xmin=WBC_min, xmax=WBC_max), width=.2, position=position_dodge(.9)) + lims(x = c(0,50000)) + 
+  theme_bw() + labs(title = "WBC", y = "cohort", x = "")  +
+  geom_vline(xintercept = co_WBC, linetype = "dashed", color = "black")  + theme(legend.justification = c(1, 1), legend.position = c(0.98, 0.98), legend.title=element_blank()) +
+  scale_color_manual(values = wes_palette("Royal1")[c(4,2,1)])
 
 p_wbc_single <- ggplot(wbc_collapse_single, aes(x = as.numeric(WBC_max), y = cohort_id)) +
-      geom_violin(fill = wes_palette("Darjeeling2")[4]) + 
-      geom_boxplot(width=.3, fill = wes_palette("Darjeeling2")[1]) + 
-      theme_bw() + geom_beeswarm(groupOnX=FALSE, alpha = 0.5) + labs(y = "", x = "WBC (/µL)", subtitle = paste0("missing data for ", wbc_missing, " cases")) + lims(x = c(0,50000)) +
-      geom_vline(xintercept = co_WBC, linetype = "dashed", color = "black") 
+  geom_violin(fill = wes_palette("Darjeeling2")[4]) + 
+  geom_boxplot(width=.3, fill = wes_palette("Darjeeling2")[1]) + 
+  theme_bw() + geom_beeswarm(groupOnX=FALSE, alpha = 0.5) + labs(y = "", x = "WBC (/µL)", subtitle = paste0("missing data for ", wbc_missing, " cases")) + lims(x = c(0,50000)) +
+  geom_vline(xintercept = co_WBC, linetype = "dashed", color = "black") 
 
 WBC_grid <- plot_grid(p_wbc_cohort, p_wbc_single, align = "v", nrow = 2, rel_heights = c(2/3, 1/3))
 WBC_grid
 ```
+
+The number of single cases with increased WBCs: `r wbc_collapse_single %>% filter(!is.na(WBC_max) & WBC_max >= co_WBC) %>% nrow()` out of total cases (= total cases minus missing cases): `r wbc_collapse_single %>% nrow() - wbc_missing`
 
 
 ### Ferritin
@@ -1194,22 +1218,23 @@ ferritin_collapse_single <- collapse_labvals_single(df_singlecases, "max", "ferr
 ferritin_missing <- sum(is.na(ferritin_collapse_single$ferrit_max))
 
 p_ferritin_cohort <- ggplot(ferritin_collapse_cohort, aes(y = cohort_id, x = ferrit_med, col = cohort_type)) + 
-        geom_point() +  
-        geom_errorbar(aes(xmin=ferrit_min, xmax=ferrit_max), width=.2, position=position_dodge(.9)) + lims(x = c(0,11000)) + 
-        theme_bw() + labs(title = "Ferritin", y = "cohort", x = "") +
-        geom_vline(xintercept = co_ferritin, linetype = "dashed", color = "black") + theme(legend.justification = c(1, 1), legend.position = c(0.98, 0.98), legend.title=element_blank()) +
-        scale_color_manual(values = wes_palette("Royal1"))
+  geom_point() +  
+  geom_errorbar(aes(xmin=ferrit_min, xmax=ferrit_max), width=.2, position=position_dodge(.9)) + lims(x = c(0,11000)) + 
+  theme_bw() + labs(title = "Ferritin", y = "cohort", x = "") +
+  geom_vline(xintercept = co_ferritin, linetype = "dashed", color = "black") + theme(legend.justification = c(1, 1), legend.position = c(0.98, 0.98), legend.title=element_blank()) +
+  scale_color_manual(values = wes_palette("Royal1")[c(4,2,1)])
 
 p_ferritin_single <- ggplot(ferritin_collapse_single, aes(x = as.numeric(ferrit_max), y = cohort_id)) +
-      geom_violin(fill = wes_palette("Darjeeling2")[4]) + 
-      geom_boxplot(width=.3, fill = wes_palette("Darjeeling2")[1]) + 
-      theme_bw() + geom_beeswarm(groupOnX=FALSE, alpha = 0.5) + labs(y = "", x = "Ferritin (µg/l)", subtitle = paste0("missing data for ", ferritin_missing, " cases")) + lims(x = c(0,11000)) +
-      geom_vline(xintercept = co_ferritin, linetype = "dashed", color = "black") 
+  geom_violin(fill = wes_palette("Darjeeling2")[4]) + 
+  geom_boxplot(width=.3, fill = wes_palette("Darjeeling2")[1]) + 
+  theme_bw() + geom_beeswarm(groupOnX=FALSE, alpha = 0.5) + labs(y = "", x = "Ferritin (µg/l)", subtitle = paste0("missing data for ", ferritin_missing, " cases")) + lims(x = c(0,11000)) +
+  geom_vline(xintercept = co_ferritin, linetype = "dashed", color = "black") 
 
 ferritin_grid <- plot_grid(p_ferritin_cohort, p_ferritin_single, align = "v", nrow = 2, rel_heights = c(2/3, 1/3))
 ferritin_grid
 ```
 
+The number of single cases with increased ferritin: `r ferritin_collapse_single %>% filter(!is.na(ferrit_max) & ferrit_max >= co_ferritin) %>% nrow()` out of total cases (= total cases minus missing cases): `r ferritin_collapse_single %>% nrow() - ferritin_missing`
 
 ### Troponin
 ```{r}
@@ -1218,21 +1243,23 @@ troponin_collapse_single <- collapse_labvals_single(df_singlecases, "max", "trop
 troponin_missing <- sum(is.na(troponin_collapse_single$troponin_max))
 
 p_troponin_cohort <- ggplot(troponin_collapse_cohort, aes(y = cohort_id, x = troponin_med, col = cohort_type)) + 
-        geom_point() +  
-        geom_errorbar(aes(xmin=troponin_min, xmax=troponin_max), width=.2, position=position_dodge(.9)) + lims(x = c(0,7000)) + 
-        theme_bw() + labs(title = "Troponin", y = "cohort", x = "")  +
-        geom_vline(xintercept = co_tropo, linetype = "dashed", color = "black")  + theme(legend.justification = c(1, 1), legend.position = c(0.98, 0.98), legend.title=element_blank()) +
-        scale_color_manual(values = wes_palette("Royal1"))
+  geom_point() +  
+  geom_errorbar(aes(xmin=troponin_min, xmax=troponin_max), width=.2, position=position_dodge(.9)) + lims(x = c(0,7000)) + 
+  theme_bw() + labs(title = "Troponin", y = "cohort", x = "")  +
+  geom_vline(xintercept = co_tropo, linetype = "dashed", color = "black")  + theme(legend.justification = c(1, 1), legend.position = c(0.98, 0.98), legend.title=element_blank()) +
+  scale_color_manual(values = wes_palette("Royal1")[c(4,2,1)])
 
 p_troponin_single <- ggplot(troponin_collapse_single, aes(x = as.numeric(troponin_max), y = cohort_id)) +
-      geom_violin(fill = wes_palette("Darjeeling2")[4]) + 
-      geom_boxplot(width=.3, fill = wes_palette("Darjeeling2")[1]) + 
-      theme_bw() + geom_beeswarm(groupOnX=FALSE, alpha = 0.5) + labs(y = "", x = "Troponin (ng/L)", subtitle = paste0("missing data for ", troponin_missing, " cases")) + lims(x = c(0,7000)) +
-      geom_vline(xintercept = co_tropo, linetype = "dashed", color = "black") 
+  geom_violin(fill = wes_palette("Darjeeling2")[4]) + 
+  geom_boxplot(width=.3, fill = wes_palette("Darjeeling2")[1]) + 
+  theme_bw() + geom_beeswarm(groupOnX=FALSE, alpha = 0.5) + labs(y = "", x = "Troponin (ng/L)", subtitle = paste0("missing data for ", troponin_missing, " cases")) + lims(x = c(0,7000)) +
+  geom_vline(xintercept = co_tropo, linetype = "dashed", color = "black") 
 
 troponin_grid <- plot_grid(p_troponin_cohort, p_troponin_single, align = "v", nrow = 2, rel_heights = c(2/3, 1/3))
 troponin_grid
 ```
+
+The number of single cases with increased troponin: `r troponin_collapse_single %>% filter(!is.na(troponin_max) & troponin_max >= co_tropo) %>% nrow()` out of total cases (= total cases minus missing cases): `r troponin_collapse_single %>% nrow() - troponin_missing`
 
 
 ### IL-6
@@ -1244,21 +1271,23 @@ IL6_collapse_single <- collapse_labvals_single(df_singlecases_inclPouletty, "max
 IL6_missing <- sum(is.na(IL6_collapse_single$IL6_max))
 
 p_IL6_cohort <- ggplot(IL6_collapse_cohort, aes(y = cohort_id, x = IL6_med)) + 
-        geom_point() +  
-        geom_errorbar(aes(xmin=IL6_min, xmax=IL6_max), width=.2, position=position_dodge(.9)) + lims(x = c(0,2500)) + 
-        theme_bw() + labs(title = "IL6", y = "cohort", x = "")  +
-        geom_vline(xintercept = co_IL6, linetype = "dashed", color = "black")  +
-        scale_color_manual(values = wes_palette("Royal1"))
+  geom_point() +  
+  geom_errorbar(aes(xmin=IL6_min, xmax=IL6_max), width=.2, position=position_dodge(.9)) + lims(x = c(0,2500)) + 
+  theme_bw() + labs(title = "IL6", y = "cohort", x = "")  +
+  geom_vline(xintercept = co_IL6, linetype = "dashed", color = "black")  +
+  scale_color_manual(values = wes_palette("Royal1")[c(4,2,1)])
 
 p_IL6_single <- ggplot(IL6_collapse_single, aes(x = as.numeric(IL6_max), y = cohort_id)) +
-      geom_violin(fill = wes_palette("Darjeeling2")[4]) + 
-      geom_boxplot(width=.3, fill = wes_palette("Darjeeling2")[1]) + 
-      theme_bw() + geom_beeswarm(groupOnX=FALSE, alpha = 0.5) + labs(y = "", x = "IL6 (pg/ml)", subtitle = paste0("missing data for ", IL6_missing, " cases")) + lims(x = c(0,2500)) +
-      geom_vline(xintercept = co_IL6, linetype = "dashed", color = "black") 
+  geom_violin(fill = wes_palette("Darjeeling2")[4]) + 
+  geom_boxplot(width=.3, fill = wes_palette("Darjeeling2")[1]) + 
+  theme_bw() + geom_beeswarm(groupOnX=FALSE, alpha = 0.5) + labs(y = "", x = "IL6 (pg/ml)", subtitle = paste0("missing data for ", IL6_missing, " cases")) + lims(x = c(0,2500)) +
+  geom_vline(xintercept = co_IL6, linetype = "dashed", color = "black") 
 
 IL6_grid <- plot_grid(p_IL6_cohort, p_IL6_single, align = "v", nrow = 2, rel_heights = c(2/3, 1/3))
 IL6_grid
 ```
+
+The number of single cases with increased IL6: `r IL6_collapse_single %>% filter(!is.na(IL6_max) & IL6_max >= co_IL6) %>% nrow()` out of total cases (= total cases minus missing cases): `r IL6_collapse_single %>% nrow() - IL6_missing`
 
 
 ### BNP
@@ -1269,21 +1298,26 @@ collapse_single <- collapse_labvals_single(df_singlecases, "max", "_BNP")
 missing <- sum(is.na(collapse_single$`_BNP_max`))
 
 p_BNP_cohort <- ggplot(collapse_cohort, aes(y = cohort_id, x = `_BNP_med`, col = cohort_type)) + 
-        geom_point() +  
-        geom_errorbar(aes(xmin=`_BNP_min`, xmax=`_BNP_max`), width=.2, position=position_dodge(.9)) + lims(x = c(0,20000)) + 
-        theme_bw() + labs(title = "BNP", y = "cohort", x = "")  +
-        geom_vline(xintercept = co_BNP, linetype = "dashed", color = "black")  +theme(legend.justification = c(1, 1), legend.position = c(0.98, 0.98)) +
-        scale_color_manual(values = wes_palette("Royal1"))
+  geom_point() +  
+  geom_errorbar(aes(xmin=`_BNP_min`, xmax=`_BNP_max`), width=.2, position=position_dodge(.9)) + lims(x = c(0,20000)) + 
+  theme_bw() + labs(title = "BNP", y = "cohort", x = "")  +
+  geom_vline(xintercept = co_BNP, linetype = "dashed", color = "black")  +theme(legend.justification = c(1, 1), legend.position = c(0.98, 0.98)) +
+  scale_color_manual(values = wes_palette("Royal1")[c(4,2,1)])
 
 p_BNP_single <- ggplot(collapse_single, aes(x = as.numeric(`_BNP_max`), y = cohort_id)) +
-      geom_violin(fill = wes_palette("Darjeeling2")[4]) + 
-      geom_boxplot(width=.3, fill = wes_palette("Darjeeling2")[1]) + 
-      theme_bw() + geom_beeswarm(groupOnX=FALSE, alpha = 0.5) + labs(y = "", x = "BNP (pg/ml)", subtitle = paste0("missing data for ", missing, " cases")) + lims(x = c(0,20000)) +
-      geom_vline(xintercept = co_BNP, linetype = "dashed", color = "black") 
+  geom_violin(fill = wes_palette("Darjeeling2")[4]) + 
+  geom_boxplot(width=.3, fill = wes_palette("Darjeeling2")[1]) + 
+  theme_bw() + geom_beeswarm(groupOnX=FALSE, alpha = 0.5) + labs(y = "", x = "BNP (pg/ml)", subtitle = paste0("missing data for ", missing, " cases")) + lims(x = c(0,20000)) +
+  geom_vline(xintercept = co_BNP, linetype = "dashed", color = "black") 
 
 BNP_grid <- plot_grid(p_BNP_cohort, p_BNP_single, align = "v", nrow = 2, rel_heights = c(2/3, 1/3))
 BNP_grid
+
+n_incr <- collapse_single %>% filter(!is.na(`_BNP_max`) & `_BNP_max` >= co_BNP) %>% nrow()
 ```
+
+The number of single cases with increased BNP: `r n_incr` out of total cases (= total cases minus missing cases): `r collapse_single %>% nrow() - missing`
+
 
 ### NTproBNP
 ```{r}
@@ -1292,21 +1326,25 @@ collapse_single <- collapse_labvals_single(df_singlecases, "max", "NTproBNP")
 missing <- sum(is.na(collapse_single$NTproBNP_max))
 
 p_NTproBNP_cohort <- ggplot(collapse_cohort, aes(y = cohort_id, x = NTproBNP_med, col = cohort_type)) + 
-        geom_point() +  
-        geom_errorbar(aes(xmin=NTproBNP_min, xmax=NTproBNP_max), width=.2, position=position_dodge(.9)) + lims(x = c(0,70000)) + 
-        theme_bw() + labs(title = "NTproBNP", y = "cohort", x = "")  +
-        geom_vline(xintercept = co_NTproBNP, linetype = "dashed", color = "black") + theme(legend.justification = c(1, 1), legend.position = c(0.98, 0.98), legend.title=element_blank()) +
-        scale_color_manual(values = wes_palette("Royal1"))
+  geom_point() +  
+  geom_errorbar(aes(xmin=NTproBNP_min, xmax=NTproBNP_max), width=.2, position=position_dodge(.9)) + lims(x = c(0,70000)) + 
+  theme_bw() + labs(title = "NTproBNP", y = "cohort", x = "")  +
+  geom_vline(xintercept = co_NTproBNP, linetype = "dashed", color = "black") + theme(legend.justification = c(1, 1), legend.position = c(0.98, 0.98), legend.title=element_blank()) +
+  scale_color_manual(values = wes_palette("Royal1")[c(4,2,1)])
 
 p_NTproBNP_single <- ggplot(collapse_single, aes(x = as.numeric(NTproBNP_max), y = cohort_id)) +
-      geom_violin(fill = wes_palette("Darjeeling2")[4]) + 
-      geom_boxplot(width=.3, fill = wes_palette("Darjeeling2")[1]) + 
-      theme_bw() + geom_beeswarm(groupOnX=FALSE, alpha = 0.5) + labs(y = "", x = "NTproBNP (pg/ml)", subtitle = paste0("missing data for ", missing, " cases")) + lims(x = c(0,70000)) +
-      geom_vline(xintercept = co_NTproBNP, linetype = "dashed", color = "black") 
+  geom_violin(fill = wes_palette("Darjeeling2")[4]) + 
+  geom_boxplot(width=.3, fill = wes_palette("Darjeeling2")[1]) + 
+  theme_bw() + geom_beeswarm(groupOnX=FALSE, alpha = 0.5) + labs(y = "", x = "NTproBNP (pg/ml)", subtitle = paste0("missing data for ", missing, " cases")) + lims(x = c(0,70000)) +
+  geom_vline(xintercept = co_NTproBNP, linetype = "dashed", color = "black") 
 
 NTproBNP_grid <- plot_grid(p_NTproBNP_cohort, p_NTproBNP_single, align = "v", nrow = 2, rel_heights = c(2/3, 1/3))
 NTproBNP_grid
+
+n_incr <- collapse_single %>% filter(!is.na(`NTproBNP_max`) & `NTproBNP_max` >= co_NTproBNP) %>% nrow()
 ```
+
+The number of single cases with increased NTproBNP: `r n_incr` out of total cases (= total cases minus missing cases): `r collapse_single %>% nrow() - missing`
 
 
 ### Platelets
@@ -1317,22 +1355,25 @@ collapse_single <- collapse_labvals_single(df_singlecases, "min", "platelet")
 missing <- sum(is.na(collapse_single$platelet_min))
 
 p_platelet_cohort <- ggplot(collapse_cohort, aes(y = cohort_id, x = platelet_med, col = cohort_type)) + 
-        geom_point() +  
-        geom_errorbar(aes(xmin=platelet_min, xmax=platelet_max, col=cohort_type), width=.2, position=position_dodge(.9)) + lims(x = c(0,750000)) + 
-        theme_bw() + labs(title = "platelet", y = "cohort", x = "")  +
-        geom_vline(xintercept = co_platelet, linetype = "dashed", color = "black")  + theme(legend.justification = c(1, 1), legend.position = c(0.98, 0.98), legend.title=element_blank()) +
-        scale_color_manual(values = wes_palette("Royal1"))
+  geom_point() +  
+  geom_errorbar(aes(xmin=platelet_min, xmax=platelet_max, col=cohort_type), width=.2, position=position_dodge(.9)) + lims(x = c(0,750000)) + 
+  theme_bw() + labs(title = "platelet", y = "cohort", x = "")  +
+  geom_vline(xintercept = co_platelet, linetype = "dashed", color = "black")  + theme(legend.justification = c(1, 1), legend.position = c(0.98, 0.98), legend.title=element_blank()) +
+  scale_color_manual(values = wes_palette("Royal1")[c(4,2,1)])
 
 p_platelet_single <- ggplot(collapse_single, aes(x = as.numeric(platelet_min), y = cohort_id)) +
-      geom_violin(fill = wes_palette("Darjeeling2")[4]) + 
-      geom_boxplot(width=.3, fill = wes_palette("Darjeeling2")[1]) + 
-      theme_bw() + geom_beeswarm(groupOnX=FALSE, alpha = 0.5) + labs(y = "", x = "Platelets (/µL)", subtitle = paste0("missing data for ", missing, " cases")) + lims(x = c(0,750000)) +
-      geom_vline(xintercept = co_platelet, linetype = "dashed", color = "black") 
+  geom_violin(fill = wes_palette("Darjeeling2")[4]) + 
+  geom_boxplot(width=.3, fill = wes_palette("Darjeeling2")[1]) + 
+  theme_bw() + geom_beeswarm(groupOnX=FALSE, alpha = 0.5) + labs(y = "", x = "Platelets (/µL)", subtitle = paste0("missing data for ", missing, " cases")) + lims(x = c(0,750000)) +
+  geom_vline(xintercept = co_platelet, linetype = "dashed", color = "black") 
 
 platelet_grid <- plot_grid(p_platelet_cohort, p_platelet_single, align = "v", nrow = 2, rel_heights = c(2/3, 1/3))
 platelet_grid
+
+n_decr <- collapse_single %>% filter(!is.na(`platelet_min`) & `platelet_min` <= co_platelet) %>% nrow()
 ```
 
+The number of single cases with thrombopenia (< 150 000): `r n_decr` out of total cases (= total cases minus missing cases): `r collapse_single %>% nrow() - missing`
 
 ### D-dimers
 
@@ -1342,21 +1383,26 @@ collapse_single <- collapse_labvals_single(df_singlecases, "max", "Ddim")
 missing <- sum(is.na(collapse_single$Ddim_max))
 
 p_Ddim_cohort <- ggplot(collapse_cohort, aes(y = cohort_id, x = Ddim_med, col = cohort_type)) + 
-        geom_point() +  
-        geom_errorbar(aes(xmin=Ddim_min, xmax=Ddim_max, col=cohort_type), width=.2, position=position_dodge(.9)) + lims(x = c(0,11000)) + 
-        theme_bw() + labs(title = "D-dimers", y = "cohort", x = "")  +
-        geom_vline(xintercept = co_Ddim, linetype = "dashed", color = "black")  + theme(legend.justification = c(1, 1), legend.position = c(0.98, 0.98), legend.title=element_blank()) +
-        scale_color_manual(values = wes_palette("Royal1"))
+  geom_point() +  
+  geom_errorbar(aes(xmin=Ddim_min, xmax=Ddim_max, col=cohort_type), width=.2, position=position_dodge(.9)) + lims(x = c(0,11000)) + 
+  theme_bw() + labs(title = "D-dimers", y = "cohort", x = "")  +
+  geom_vline(xintercept = co_Ddim, linetype = "dashed", color = "black")  + theme(legend.justification = c(1, 1), legend.position = c(0.98, 0.98), legend.title=element_blank()) +
+  scale_color_manual(values = wes_palette("Royal1")[c(4,2,1)])
 
 p_Ddim_single <- ggplot(collapse_single, aes(x = as.numeric(Ddim_max), y = cohort_id)) +
-      geom_violin(fill = wes_palette("Darjeeling2")[4]) + 
-      geom_boxplot(width=.3, fill = wes_palette("Darjeeling2")[1]) + 
-      theme_bw() + geom_beeswarm(groupOnX=FALSE, alpha = 0.5) + labs(y = "", x = "D-dimers (ng/ml)", subtitle = paste0("missing data for ", missing, " cases")) + lims(x = c(0,11000)) +
-      geom_vline(xintercept = co_Ddim, linetype = "dashed", color = "black") 
+  geom_violin(fill = wes_palette("Darjeeling2")[4]) + 
+  geom_boxplot(width=.3, fill = wes_palette("Darjeeling2")[1]) + 
+  theme_bw() + geom_beeswarm(groupOnX=FALSE, alpha = 0.5) + labs(y = "", x = "D-dimers (ng/ml)", subtitle = paste0("missing data for ", missing, " cases")) + lims(x = c(0,11000)) +
+  geom_vline(xintercept = co_Ddim, linetype = "dashed", color = "black") 
 
 Ddim_grid <- plot_grid(p_Ddim_cohort, p_Ddim_single, align = "v", nrow = 2, rel_heights = c(2/3, 1/3))
 Ddim_grid
+
+n_incr <- collapse_single %>% filter(!is.na(`Ddim_max`) & `Ddim_max` >= co_Ddim) %>% nrow()
 ```
+
+The number of single cases with increased D-dimers: `r n_incr` out of total cases (= total cases minus missing cases): `r collapse_single %>% nrow() - missing`
+
 
 
 ### Sodium
@@ -1367,22 +1413,25 @@ collapse_single <- collapse_labvals_single(df_singlecases, "min", "sodium")
 missing <- sum(is.na(collapse_single$sodium_min))
 
 p_sodium_cohort <- ggplot(collapse_cohort, aes(y = cohort_id, x = sodium_med, col = cohort_type)) + 
-        geom_point() +  
-        geom_errorbar(aes(xmin=sodium_min, xmax=sodium_max, col=cohort_type), width=.2, position=position_dodge(.9)) + lims(x = c(100,200)) + 
-        theme_bw() + labs(title = "Sodium", y = "cohort", x = "")  +
-        geom_vline(xintercept = co_sodium, linetype = "dashed", color = "black")  + theme(legend.justification = c(1, 1), legend.position = c(0.98, 0.98), legend.title=element_blank()) +
-        scale_color_manual(values = wes_palette("Royal1"))
+  geom_point() +  
+  geom_errorbar(aes(xmin=sodium_min, xmax=sodium_max, col=cohort_type), width=.2, position=position_dodge(.9)) + lims(x = c(100,200)) + 
+  theme_bw() + labs(title = "Sodium", y = "cohort", x = "")  +
+  geom_vline(xintercept = co_sodium, linetype = "dashed", color = "black")  + theme(legend.justification = c(1, 1), legend.position = c(0.98, 0.98), legend.title=element_blank()) +
+  scale_color_manual(values = wes_palette("Royal1")[c(4,2,1)])
 
 p_sodium_single <- ggplot(collapse_single, aes(x = as.numeric(sodium_min), y = cohort_id)) +
-      geom_violin(fill = wes_palette("Darjeeling2")[4]) + 
-      geom_boxplot(width=.3, fill = wes_palette("Darjeeling2")[1]) + 
-      theme_bw() + geom_beeswarm(groupOnX=FALSE, alpha = 0.5) + labs(y = "", x = "Sodium (mmol/L)", subtitle = paste0("missing data for ", missing, " cases")) + lims(x = c(100,200)) +
-      geom_vline(xintercept = co_sodium, linetype = "dashed", color = "black") 
+  geom_violin(fill = wes_palette("Darjeeling2")[4]) + 
+  geom_boxplot(width=.3, fill = wes_palette("Darjeeling2")[1]) + 
+  theme_bw() + geom_beeswarm(groupOnX=FALSE, alpha = 0.5) + labs(y = "", x = "Sodium (mmol/L)", subtitle = paste0("missing data for ", missing, " cases")) + lims(x = c(100,200)) +
+  geom_vline(xintercept = co_sodium, linetype = "dashed", color = "black") 
 
 sodium_grid <- plot_grid(p_sodium_cohort, p_sodium_single, align = "v", nrow = 2, rel_heights = c(2/3, 1/3))
 sodium_grid
+
+n_decr <- collapse_single %>% filter(!is.na(`sodium_min`) & `sodium_min` <= co_sodium) %>% nrow()
 ```
 
+The number of single cases with hyponatremia: `r n_decr` out of total cases (= total cases minus missing cases): `r collapse_single %>% nrow() - missing`
 
 ## Critical care interventions
 
@@ -1391,9 +1440,11 @@ sodium_grid
 makeBarplot(var_id_cohort = "critcare_inotrop_n", var_id_single = "critcare_inotrop", var_id = "inotropes")
 ```
 
-```{r}
+```{r fig.height = 8, fig.width= 8}
 makeHeatmap_cohort("critcare", "critcare",exclude_single = "days", plottitle = "Cases receiving critical care interventions, per cohort")
+```
 
+```{r}
 barSymp("critcare", "critcare", exclude_single = "days", plottitle = "Cases receiving critical care interventions")
 ```
 
@@ -1404,10 +1455,11 @@ makeBarplot(var_id_cohort = "rx_IVIg_once_n", var_id_single = "rx_IVIg_once", va
 ```
 
 ### Overall therapy
-```{r}
+```{r fig.height = 8, fig.width= 8}
 makeHeatmap_cohort("rx", "rx",exclude_single = "days", plottitle = "Cases receiving treatment, per cohort")
+```
 
-
+```{r}
 barSymp("rx", "rx", exclude_single = "days", plottitle = "Cases receiving treatment")
 ```
 
@@ -1437,7 +1489,7 @@ Cut-offs in this study:
 ### PIMS-TS
 [Source RCPCH](https://www.rcpch.ac.uk/sites/default/files/2020-05/COVID-19-Paediatric-multisystem-%20inflammatory%20syndrome-20200501.pdf)  
 
-1. A child presenting with persistent fever, inflammation (neutrophilia, elevated CRP and lymphopaenia) and evidence of single or multi-organ dysfunction (shock, cardiac, respiratory, renal, gastrointestinal or neurological disorder) with additional features (see listed in Appendix 1 ). This may include children fulfilling full or partial criteria for Kawasaki disease.
+1. A child presenting with persistent fever, inflammation (neutrophilia, elevated CRP and lymphopaenia) and evidence of single or multi-organ dysfunction (shock, cardiac, respiratory, renal, gastrointestinal or neurological disorder) with additional features (see listed in Appendix 1). This may include children fulfilling full or partial criteria for Kawasaki disease.
 2. Exclusion of any other microbial cause, including bacterial sepsis, staphylococcal or streptococcal shock syndromes, infections associated with myocarditis such as enterovirus (waiting for results of these investigations should not delay seeking expert advice).
 3. SARS-CoV-2 PCR testing may be positive or negative 
 
@@ -1445,49 +1497,53 @@ We are unable to evaluate criteria 2.
 
 ```{r, fig.height= 10, fig.width= 8}
 PIMS_TS_fulfilled <- apply(df_singlecases, 1, function(row) {
-    # persistent fever, inflammation (neutrophilia, elevated CRP and lymphopaenia) 
-    pat_id <- row["patientID_int"]
-    fever <- row["symp_fever"] == TRUE
-    neutrophilia <- as.numeric(row["lab_neutrophils"]) > co_neutrophilia
-    elevated_CRP <- (as.numeric(row["lab_CRP_admis"]) > co_CRP | as.numeric(row["lab_CRP_NS"]) > co_CRP | as.numeric(row["lab_CRP_peak"]) > co_CRP )
-    lymphopenia <- as.numeric(row["lab_lymphocytes_lowest"]) < co_lympho
-    inflamm <- any(fever, neutrophilia, elevated_CRP, lymphopenia)
-    
-    # lab values
-    #fibrinogen <- row["lab_fibrino"] > co_fibrino
-    #Ddimers <- row["lab_Ddim_peak"] > co_Ddim |  row["lab_Ddim_NS"] > co_Ddim
-    #ferritin <- (row["lab_ferritin_NS"] > co_ferritin | row["lab_ferritin_admis"] > co_ferritin | row["lab_ferritin_peak"] > co_ferritin)
-    #albumin <- row["lab_albumin_admis"] < co_albu | row["lab_albumin_lowest"] < co_albu | row["lab_albumin_NS"] < co_albu
-    #lab_vals <- any(fibrinogen, Ddimers, ferritin, albumin)
-    
-    # single or multi-organ dysfunction (shock, cardiac, respiratory, renal, gastrointestinal or neurological disorder)
-    pneumonia <- row["symp_resp_pneumonia"] == TRUE
-    resp_failure <- row["symp_resp_failure"] == TRUE
-    resp <- any(pneumonia, resp_failure)
-    
-    AKI <- row["symp_renal_AKI"] == TRUE
-    RRT <- row["critcare_RRT"] == TRUE
-    renal <- any(AKI, RRT)
-    
-    myocarditis <- row["symp_cardiovasc_myocard"] == TRUE
-    pericarditis <- row["symp_cardiovasc_pericard"] == TRUE
-    LVEF_under30 <- row["symp_cardiovasc_LV_less30"] == TRUE
-    LVEF_30to55 <- row["symp_cardiovasc_LV_30to55"] == TRUE
-    BNP <- (as.numeric(row["lab_BNP_admis"]) > co_BNP | as.numeric(row["lab_BNP_max"]) > co_BNP ) 
-    NTproBNP <- as.numeric(row["lab_NTproBNP"]) > co_NTproBNP
-    tropo <- as.numeric(row["lab_troponin_admis"]) > co_tropo
-    shock <- row["symp_cardiovasc_shock"] == TRUE
-    
-    cardiovasc <- any(myocarditis, LVEF_under30, LVEF_30to55, NTproBNP, BNP, tropo, shock)
-    
-    rash <- row["kawasaki_exanthema"] == TRUE
-    dermato <- any(rash)
-    
-    organ_dysfunc <- sum(resp, renal, cardiovasc, dermato, na.rm = TRUE) >= 1
-
-    criteria_fulfilled <- (inflamm) & organ_dysfunc #&lab_vals
-    #return(c(pat_id, "criteria1_inflamm" = inflamm, "criteria2_labvals" = lab_vals, "criteria3_organdysfunc" = organ_dysfunc, "criteria_fulfilled" = criteria_fulfilled))
-    return(c(pat_id, "criteria1_inflamm" = inflamm, "criteria2_organdysfunc" = organ_dysfunc, "criteria_fulfilled" = criteria_fulfilled))
+  # persistent fever, inflammation (neutrophilia, elevated CRP and lymphopaenia) 
+  pat_id <- row["patientID_int"]
+  fever <- row["symp_fever"] == TRUE
+  neutrophilia <- as.numeric(row["lab_neutrophils"]) > co_neutrophilia
+  elevated_CRP <- (as.numeric(row["lab_CRP_admis"]) > co_CRP | as.numeric(row["lab_CRP_NS"]) > co_CRP | as.numeric(row["lab_CRP_peak"]) > co_CRP )
+  lymphopenia <- as.numeric(row["lab_lymphocytes_lowest"]) < co_lympho
+  inflamm <- any(fever, neutrophilia, elevated_CRP, lymphopenia)
+  
+  # lab values
+  #fibrinogen <- row["lab_fibrino"] > co_fibrino
+  #Ddimers <- row["lab_Ddim_peak"] > co_Ddim |  row["lab_Ddim_NS"] > co_Ddim
+  #ferritin <- (row["lab_ferritin_NS"] > co_ferritin | row["lab_ferritin_admis"] > co_ferritin | row["lab_ferritin_peak"] > co_ferritin)
+  #albumin <- row["lab_albumin_admis"] < co_albu | row["lab_albumin_lowest"] < co_albu | row["lab_albumin_NS"] < co_albu
+  #lab_vals <- any(fibrinogen, Ddimers, ferritin, albumin)
+  
+  # single or multi-organ dysfunction (shock, cardiac, respiratory, renal, gastrointestinal or neurological disorder)
+  pneumonia <- row["symp_resp_pneumonia"] == TRUE
+  resp_failure <- row["symp_resp_failure"] == TRUE
+  resp <- any(pneumonia, resp_failure)
+  
+  AKI <- row["symp_renal_AKI"] == TRUE
+  RRT <- row["critcare_RRT"] == TRUE
+  renal <- any(AKI, RRT)
+  
+  myocarditis <- row["symp_cardiovasc_myocard"] == TRUE
+  pericarditis <- row["symp_cardiovasc_pericard"] == TRUE
+  LVEF_under30 <- row["symp_cardiovasc_LV_less30"] == TRUE
+  LVEF_30to55 <- row["symp_cardiovasc_LV_30to55"] == TRUE
+  BNP <- (as.numeric(row["lab_BNP_admis"]) > co_BNP | as.numeric(row["lab_BNP_max"]) > co_BNP ) 
+  NTproBNP <- as.numeric(row["lab_NTproBNP"]) > co_NTproBNP
+  tropo <- as.numeric(row["lab_troponin_admis"]) > co_tropo
+  shock <- row["symp_cardiovasc_shock"] == TRUE
+  
+  
+  cardiovasc <- any(myocarditis, LVEF_under30, LVEF_30to55, NTproBNP, BNP, tropo, shock)
+  
+  rash <- row["kawasaki_exanthema"] == TRUE
+  dermato <- any(rash)
+  
+  ddim <- as.numeric(row["lab_Ddim_NS"]) >= co_Ddim
+  hemato <- any(ddim)
+  
+  organ_dysfunc <- sum(hemato, resp, renal, cardiovasc, dermato, na.rm = TRUE) >= 1
+  
+  criteria_fulfilled <- (inflamm) & organ_dysfunc #&lab_vals
+  #return(c(pat_id, "criteria1_inflamm" = inflamm, "criteria2_labvals" = lab_vals, "criteria3_organdysfunc" = organ_dysfunc, "criteria_fulfilled" = criteria_fulfilled))
+  return(c(pat_id, "criteria1_inflamm" = inflamm, "criteria2_organdysfunc" = organ_dysfunc, "criteria_fulfilled" = criteria_fulfilled))
 })
 
 PIMS_TS_fulfilled <- PIMS_TS_fulfilled %>% t() %>% as_tibble()
@@ -1505,129 +1561,130 @@ skim(PIMS_TS_fulfilled)
 
 ### CDC MIS-C
 [Source CDC](https://www.cdc.gov/mis-c/hcp/) and [UpToDate](https://www.uptodate.com/contents/image?imageKey=PEDS%2F128201&topicKey=PEDS%2F127488)
+
 The case definition for MIS-C is:
 
 1. Age <21 years
 2. Clinical presentation consistent with MIS-C, including all of the following:
-    - Fever
-        - Documented fever >38.0°C (100.4°F) for ≥24 hours or
-        - Report of subjective fever lasting ≥24 hours
-    - Laboratory evidence of inflammation
-    - Severe illness requiring hospitalization
-    - Multisystem involvement
-        - 2 or more organ systems involved
-            - Cardiovascular (eg, shock, elevated troponin, elevated BNP, abnormal echocardiogram, arrhythmia)
-            - Respiratory (eg, pneumonia, ARDS, pulmonary embolism)
-            - Renal (eg, AKI, renal failure)
-            - Neurologic (eg, seizure, stroke, aseptic meningitis)
-            - Hematologic (eg, coagulopathy)
-            - Gastrointestinal (eg, elevated liver enzymes, diarrhea, ileus, gastrointestinal bleeding)
-            - Dermatologic (eg, erythroderma, mucositis, other rash)
+- Fever
+- Documented fever >38.0°C (100.4°F) for ≥24 hours or
+- Report of subjective fever lasting ≥24 hours
+- Laboratory evidence of inflammation
+- Severe illness requiring hospitalization
+- Multisystem involvement
+- 2 or more organ systems involved
+- Cardiovascular (eg, shock, elevated troponin, elevated BNP, abnormal echocardiogram, arrhythmia)
+- Respiratory (eg, pneumonia, ARDS, pulmonary embolism)
+- Renal (eg, AKI, renal failure)
+- Neurologic (eg, seizure, stroke, aseptic meningitis)
+- Hematologic (eg, coagulopathy)
+- Gastrointestinal (eg, elevated liver enzymes, diarrhea, ileus, gastrointestinal bleeding)
+- Dermatologic (eg, erythroderma, mucositis, other rash)
 3. No alternative plausible diagnoses
 4. Recent or current SARS-CoV-2 infection or exposure
-    - Any of the following:
-    - Positive SARS-CoV-2 RT-PCR
-    - Positive serology
-    - Positive antigen test
-    - COVID-19 exposure within the 4 weeks prior to the onset of symptoms
+- Any of the following:
+- Positive SARS-CoV-2 RT-PCR
+- Positive serology
+- Positive antigen test
+- COVID-19 exposure within the 4 weeks prior to the onset of symptoms
 
 
 
 ```{r, fig.height= 10, fig.width= 8}
 
 CDC_fulfilled <- apply(df_singlecases, 1, function(row) {
-    # criteria 1
-    criteria1 = TRUE
-    
-    # criteria 2
-    pat_id <- row["patientID_int"]
-    
-    # fever?
-    fever <- row["symp_fever"] == TRUE | row["kawasaki_fever"] == TRUE
-
-    inflamm <- any(fever)
-    
-    # lab values evidence for inflammation
-    neutrophilia <- as.numeric(row["lab_neutrophils"]) > co_neutrophilia
-    elevated_CRP <- (as.numeric(row["lab_CRP_admis"]) > co_CRP | as.numeric(row["lab_CRP_NS"]) > co_CRP | as.numeric(row["lab_CRP_peak"]) > co_CRP )
-    lymphopenia <- as.numeric(row["lab_lymphocytes_lowest"]) < co_lympho
-    fibrinogen <- as.numeric(row["lab_fibrino"]) > co_fibrino
-    Ddimers <- as.numeric(row["lab_Ddim_peak"]) > co_Ddim |  as.numeric(row["lab_Ddim_NS"]) > co_Ddim
-    ferritin <- (as.numeric(row["lab_ferritin_NS"]) > co_ferritin | as.numeric(row["lab_ferritin_admis"]) > co_ferritin | as.numeric(row["lab_ferritin_peak"]) > co_ferritin)
-    albumin <- as.numeric(row["lab_albumin_admis"]) < co_albu | as.numeric(row["lab_albumin_lowest"]) < co_albu | as.numeric(row["lab_albumin_NS"]) < co_albu
-    PCT <- as.numeric(row["lab_PCT_admis"]) > co_PCT | as.numeric(row["lab_PCT_peak"]) > co_PCT | as.numeric(row["lab_PCT_NS"]) > co_PCT 
-    LDH <- as.numeric(row["lab_LDH"]) > co_LDH
-    IL6 <- as.numeric(row["lab_IL6"]) > co_IL6
-    ESR <- as.numeric(row["lab_ESR"]) > co_ESR
-
-    lab_vals <- any(neutrophilia, elevated_CRP, lymphopenia, fibrinogen, Ddimers, ferritin, albumin, PCT, LDH, IL6, ESR)
-    
-    # Ilness requiring hospitalisation
-    ## used surrogate parameters for hosp
-    hosp_ICU <- row["admis_hosp_days"] > 1 | row["admis_ICU_days"] > 1 | row["admis_PICU_admis"] == TRUE
-    NIV <- row["critcare_NIV"] == TRUE | row["critcare_NIV_days"] > 1
-    MV <- row["critcare_MV"] == TRUE | row["critcare_MV_days"] > 1
-    inotrop <- row["critcare_inotrop"] == TRUE | row["critcare_inotrop_days"] > 1
-    ECMO <- row["critcare_ECMO"] == TRUE 
-    IVIg <- row["rx_IVIg_once"] == TRUE  |  row["rx_IVIg_multip"] == TRUE 
-    biologicals <- row["rx_anakinra"] == TRUE | row["rx_tocilizumab"] == TRUE | row["rx_infliximab"] == TRUE | row["rx_antibiotics"] == TRUE | row["rx_plasma"] == TRUE | row["rx_remdesivir"] == TRUE 
-    heparin <- row["rx_heparin"] == TRUE
-
-
-    req_hosp <- any(hosp_ICU, NIV, MV, inotrop, ECMO, IVIg, biologicals, heparin)
-    
-    ## multisystem involvement >= 2
-    ## respiratory
-    pneumonia <- row["symp_resp_pneumonia"] == TRUE
-    resp_failure <- row["symp_resp_failure"] == TRUE
-    resp <- any(pneumonia, resp_failure)
-    
-    AKI <- row["symp_renal_AKI"] == TRUE
-    RRT <- row["critcare_RRT"] == TRUE
-    renal <- any(AKI, RRT)
-    
-    myocarditis <- row["symp_cardiovasc_myocard"] == TRUE
-    pericarditis <- row["symp_cardiovasc_pericard"] == TRUE
-    LVEF_under30 <- row["symp_cardiovasc_LV_less30"] == TRUE
-    LVEF_30to55 <- row["symp_cardiovasc_LV_30to55"] == TRUE
-    BNP <- (as.numeric(row["lab_BNP_admis"]) > co_BNP | as.numeric(row["lab_BNP_max"]) > co_BNP ) 
-    NTproBNP <- as.numeric(row["lab_NTproBNP"]) > co_NTproBNP
-    tropo <- as.numeric(row["lab_troponin_admis"]) > co_tropo
-    shock <- row["symp_cardiovasc_shock"] == TRUE
-    
-    cardiovasc <- any(myocarditis, LVEF_under30, LVEF_30to55, NTproBNP, BNP, tropo, shock)
-    
-    rash <- row["kawasaki_exanthema"] == TRUE
-    dermato <- any(rash)
-    
-    organ_dysfunc <- sum(resp, renal, cardiovasc, dermato, na.rm = TRUE) >= 2
-    
-    criteria2 <- sum(inflamm, lab_vals, req_hosp, organ_dysfunc, na.rm = TRUE) == 4
-    # criteria 3
-    ## not evaluable
-    criteria3 = TRUE
-    # criteria 4
-    # COVID pos?
-    PCR_pos <- row["covid_PCR_pos"] == TRUE
-    stool_pos <- row["covid_PCR_stool_pos"] == TRUE
-    closecontact <- row["covid_closecontact"] == TRUE
-    IgA <- row["covid_IgA_pos"] == TRUE
-    IgM <- row["covid_IgM_pos"] == TRUE    
-    IgG <- row["covid_IgG_pos"] == TRUE    
-    any_sero <- row["covid_sero_pos"] == TRUE
-    
-    criteria4 <- any(PCR_pos, stool_pos, closecontact, IgA, IgM, IgG, any_sero)
-    
-    if (FALSE %in% c(criteria1, criteria2, criteria3, criteria4)){
-      criteria_fulfilled <- FALSE
-    } else if (NA %in% c(criteria1, criteria2, criteria3, criteria4)){
-      criteria_fulfilled <- NA
-    } else if (sum(criteria1, criteria2, criteria3, criteria4, na.rm = TRUE) == 4){
-      criteria_fulfilled <- TRUE
-    }
-    
-    #criteria_fulfilled <- sum(criteria1, criteria2, criteria3, criteria4, na.rm = TRUE) == 4
-    return(c(pat_id, "criteria1_age" = criteria1, "criteria2_clinical" = criteria2, "criteria3_noAlt" = criteria3, "criteria4_recentExposure" = criteria4, "criteria_fulfilled" = criteria_fulfilled))
+  # criteria 1
+  criteria1 = TRUE
+  
+  # criteria 2
+  pat_id <- row["patientID_int"]
+  
+  # fever?
+  fever <- row["symp_fever"] == TRUE | row["kawasaki_fever"] == TRUE
+  
+  inflamm <- any(fever)
+  
+  # lab values evidence for inflammation
+  neutrophilia <- as.numeric(row["lab_neutrophils"]) > co_neutrophilia
+  elevated_CRP <- (as.numeric(row["lab_CRP_admis"]) > co_CRP | as.numeric(row["lab_CRP_NS"]) > co_CRP | as.numeric(row["lab_CRP_peak"]) > co_CRP )
+  lymphopenia <- as.numeric(row["lab_lymphocytes_lowest"]) < co_lympho
+  fibrinogen <- as.numeric(row["lab_fibrino"]) > co_fibrino
+  Ddimers <- as.numeric(row["lab_Ddim_peak"]) > co_Ddim |  as.numeric(row["lab_Ddim_NS"]) > co_Ddim
+  ferritin <- (as.numeric(row["lab_ferritin_NS"]) > co_ferritin | as.numeric(row["lab_ferritin_admis"]) > co_ferritin | as.numeric(row["lab_ferritin_peak"]) > co_ferritin)
+  albumin <- as.numeric(row["lab_albumin_admis"]) < co_albu | as.numeric(row["lab_albumin_lowest"]) < co_albu | as.numeric(row["lab_albumin_NS"]) < co_albu
+  PCT <- as.numeric(row["lab_PCT_admis"]) > co_PCT | as.numeric(row["lab_PCT_peak"]) > co_PCT | as.numeric(row["lab_PCT_NS"]) > co_PCT 
+  LDH <- as.numeric(row["lab_LDH"]) > co_LDH
+  IL6 <- as.numeric(row["lab_IL6"]) > co_IL6
+  ESR <- as.numeric(row["lab_ESR"]) > co_ESR
+  
+  lab_vals <- any(neutrophilia, elevated_CRP, lymphopenia, fibrinogen, Ddimers, ferritin, albumin, PCT, LDH, IL6, ESR)
+  
+  # Ilness requiring hospitalisation
+  ## used surrogate parameters for hosp
+  hosp_ICU <- row["admis_hosp_days"] > 1 | row["admis_ICU_days"] > 1 | row["admis_PICU_admis"] == TRUE
+  NIV <- row["critcare_NIV"] == TRUE | row["critcare_NIV_days"] > 1
+  MV <- row["critcare_MV"] == TRUE | row["critcare_MV_days"] > 1
+  inotrop <- row["critcare_inotrop"] == TRUE | row["critcare_inotrop_days"] > 1
+  ECMO <- row["critcare_ECMO"] == TRUE 
+  IVIg <- row["rx_IVIg_once"] == TRUE  |  row["rx_IVIg_multip"] == TRUE 
+  biologicals <- row["rx_anakinra"] == TRUE | row["rx_tocilizumab"] == TRUE | row["rx_infliximab"] == TRUE | row["rx_antibiotics"] == TRUE | row["rx_plasma"] == TRUE | row["rx_remdesivir"] == TRUE 
+  heparin <- row["rx_heparin"] == TRUE
+  
+  
+  req_hosp <- any(hosp_ICU, NIV, MV, inotrop, ECMO, IVIg, biologicals, heparin)
+  
+  ## multisystem involvement >= 2
+  ## respiratory
+  pneumonia <- row["symp_resp_pneumonia"] == TRUE
+  resp_failure <- row["symp_resp_failure"] == TRUE
+  resp <- any(pneumonia, resp_failure)
+  
+  AKI <- row["symp_renal_AKI"] == TRUE
+  RRT <- row["critcare_RRT"] == TRUE
+  renal <- any(AKI, RRT)
+  
+  myocarditis <- row["symp_cardiovasc_myocard"] == TRUE
+  pericarditis <- row["symp_cardiovasc_pericard"] == TRUE
+  LVEF_under30 <- row["symp_cardiovasc_LV_less30"] == TRUE
+  LVEF_30to55 <- row["symp_cardiovasc_LV_30to55"] == TRUE
+  BNP <- (as.numeric(row["lab_BNP_admis"]) > co_BNP | as.numeric(row["lab_BNP_max"]) > co_BNP ) 
+  NTproBNP <- as.numeric(row["lab_NTproBNP"]) > co_NTproBNP
+  tropo <- as.numeric(row["lab_troponin_admis"]) > co_tropo
+  shock <- row["symp_cardiovasc_shock"] == TRUE
+  
+  cardiovasc <- any(myocarditis, LVEF_under30, LVEF_30to55, NTproBNP, BNP, tropo, shock)
+  
+  rash <- row["kawasaki_exanthema"] == TRUE
+  dermato <- any(rash)
+  
+  organ_dysfunc <- sum(resp, renal, cardiovasc, dermato, na.rm = TRUE) >= 2
+  
+  criteria2 <- sum(inflamm, lab_vals, req_hosp, organ_dysfunc, na.rm = TRUE) == 4
+  # criteria 3
+  ## not evaluable
+  criteria3 = TRUE
+  # criteria 4
+  # COVID pos?
+  PCR_pos <- row["covid_PCR_pos"] == TRUE
+  stool_pos <- row["covid_PCR_stool_pos"] == TRUE
+  closecontact <- row["covid_closecontact"] == TRUE
+  IgA <- row["covid_IgA_pos"] == TRUE
+  IgM <- row["covid_IgM_pos"] == TRUE    
+  IgG <- row["covid_IgG_pos"] == TRUE    
+  any_sero <- row["covid_sero_pos"] == TRUE
+  
+  criteria4 <- any(PCR_pos, stool_pos, closecontact, IgA, IgM, IgG, any_sero)
+  
+  if (FALSE %in% c(criteria1, criteria2, criteria3, criteria4)){
+    criteria_fulfilled <- FALSE
+  } else if (NA %in% c(criteria1, criteria2, criteria3, criteria4)){
+    criteria_fulfilled <- NA
+  } else if (sum(criteria1, criteria2, criteria3, criteria4, na.rm = TRUE) == 4){
+    criteria_fulfilled <- TRUE
+  }
+  
+  #criteria_fulfilled <- sum(criteria1, criteria2, criteria3, criteria4, na.rm = TRUE) == 4
+  return(c(pat_id, "criteria1_age" = criteria1, "criteria2_clinical" = criteria2, "criteria3_noAlt" = criteria3, "criteria4_recentExposure" = criteria4, "criteria_fulfilled" = criteria_fulfilled))
 })
 
 CDC_fulfilled <- CDC_fulfilled %>% t() %>% as_tibble()
@@ -1642,6 +1699,94 @@ skim(CDC_fulfilled)
 #ggplot(CDC_fulfilled_heatmap_melt, aes(x = variable, y = as.character(patientID_int), fill = as.factor(value))) + geom_tile() + theme_classic() + theme(axis.line=element_blank()) + labs(y = "Patient ID", x = "criteria", fill = "criteria met", title = "Overview of which single cases fulfill CDC MIS-C case definition") +  scale_fill_manual(labels = c("No", "Yes", "Missing"), values = c("pink2", "royalblue3", "darkgrey")) + theme(axis.text.x=element_text(angle=90, hjust=1))
 ```
 
+#### CDC criterium 2 in more detail
+```{r, fig.height = 16, fig.width=7}
+CDC_fulfilled_crit2 <- apply(df_singlecases, 1, function(row) {
+  pat_id <- row["patientID_int"]
+  
+  # fever?
+  fever <- row["symp_fever"] == TRUE | row["kawasaki_fever"] == TRUE
+  
+  inflamm <- any(fever)
+  
+  # lab values evidence for inflammation
+  neutrophilia <- as.numeric(row["lab_neutrophils"]) > co_neutrophilia
+  elevated_CRP <- (as.numeric(row["lab_CRP_admis"]) > co_CRP | as.numeric(row["lab_CRP_NS"]) > co_CRP | as.numeric(row["lab_CRP_peak"]) > co_CRP )
+  lymphopenia <- as.numeric(row["lab_lymphocytes_lowest"]) < co_lympho
+  fibrinogen <- as.numeric(row["lab_fibrino"]) > co_fibrino
+  Ddimers <- as.numeric(row["lab_Ddim_peak"]) > co_Ddim |  as.numeric(row["lab_Ddim_NS"]) > co_Ddim
+  ferritin <- (as.numeric(row["lab_ferritin_NS"]) > co_ferritin | as.numeric(row["lab_ferritin_admis"]) > co_ferritin | as.numeric(row["lab_ferritin_peak"]) > co_ferritin)
+  albumin <- as.numeric(row["lab_albumin_admis"]) < co_albu | as.numeric(row["lab_albumin_lowest"]) < co_albu | as.numeric(row["lab_albumin_NS"]) < co_albu
+  PCT <- as.numeric(row["lab_PCT_admis"]) > co_PCT | as.numeric(row["lab_PCT_peak"]) > co_PCT | as.numeric(row["lab_PCT_NS"]) > co_PCT 
+  LDH <- as.numeric(row["lab_LDH"]) > co_LDH
+  IL6 <- as.numeric(row["lab_IL6"]) > co_IL6
+  ESR <- as.numeric(row["lab_ESR"]) > co_ESR
+  
+  lab_vals <- any(neutrophilia, elevated_CRP, lymphopenia, fibrinogen, Ddimers, ferritin, albumin, PCT, LDH, IL6, ESR)
+  
+  # Ilness requiring hospitalisation
+  ## used surrogate parameters for hosp
+  hosp_ICU <- row["admis_hosp_days"] > 1 | row["admis_ICU_days"] > 1 | row["admis_PICU_admis"] == TRUE
+  NIV <- row["critcare_NIV"] == TRUE | row["critcare_NIV_days"] > 1
+  MV <- row["critcare_MV"] == TRUE | row["critcare_MV_days"] > 1
+  inotrop <- row["critcare_inotrop"] == TRUE | row["critcare_inotrop_days"] > 1
+  ECMO <- row["critcare_ECMO"] == TRUE 
+  IVIg <- row["rx_IVIg_once"] == TRUE  |  row["rx_IVIg_multip"] == TRUE 
+  biologicals <- row["rx_anakinra"] == TRUE | row["rx_tocilizumab"] == TRUE | row["rx_infliximab"] == TRUE | row["rx_antibiotics"] == TRUE | row["rx_plasma"] == TRUE | row["rx_remdesivir"] == TRUE 
+  heparin <- row["rx_heparin"] == TRUE
+  
+  
+  req_hosp <- any(hosp_ICU, NIV, MV, inotrop, ECMO, IVIg, biologicals, heparin)
+  
+  ## multisystem involvement >= 2
+  ## respiratory
+  pneumonia <- row["symp_resp_pneumonia"] == TRUE
+  resp_failure <- row["symp_resp_failure"] == TRUE
+  resp <- any(pneumonia, resp_failure)
+  
+  AKI <- row["symp_renal_AKI"] == TRUE
+  RRT <- row["critcare_RRT"] == TRUE
+  renal <- any(AKI, RRT)
+  
+  myocarditis <- row["symp_cardiovasc_myocard"] == TRUE
+  pericarditis <- row["symp_cardiovasc_pericard"] == TRUE
+  LVEF_under30 <- row["symp_cardiovasc_LV_less30"] == TRUE
+  LVEF_30to55 <- row["symp_cardiovasc_LV_30to55"] == TRUE
+  BNP <- (as.numeric(row["lab_BNP_admis"]) > co_BNP | as.numeric(row["lab_BNP_max"]) > co_BNP ) 
+  NTproBNP <- as.numeric(row["lab_NTproBNP"]) > co_NTproBNP
+  tropo <- as.numeric(row["lab_troponin_admis"]) > co_tropo
+  shock <- row["symp_cardiovasc_shock"] == TRUE
+  
+  cardiovasc <- any(myocarditis, LVEF_under30, LVEF_30to55, NTproBNP, BNP, tropo, shock)
+  
+  rash <- row["kawasaki_exanthema"] == TRUE
+  dermato <- any(rash)
+  
+  organ_dysfunc <- sum(resp, renal, cardiovasc, dermato, na.rm = TRUE) >= 2
+  
+
+  #criteria_fulfilled <- sum(criteria1, criteria2, criteria3, criteria4, na.rm = TRUE) == 4
+  return(c(pat_id, "criteria2_inflamm" = inflamm, "criteria2_labvals" = lab_vals, "criteria2_req_hosp" = req_hosp, "criteria2_organ_dysfunc" = organ_dysfunc))
+})
+CDC_fulfilled_crit2 <- CDC_fulfilled_crit2
+CDC_fulfilled_crit2 <- CDC_fulfilled_crit2 %>% t() %>% as_tibble()
+CDC_fulfilled_crit2 <- type_convert(CDC_fulfilled_crit2)
+CDC_fulfilled_crit2_heatmap <- CDC_fulfilled_crit2
+cols <- sapply(CDC_fulfilled_crit2_heatmap, is.logical)
+CDC_fulfilled_crit2_heatmap[,cols] <- lapply(CDC_fulfilled_crit2_heatmap[,cols], as.numeric)
+CDC_fulfilled_crit2_heatmap_melt <- CDC_fulfilled_crit2_heatmap %>% melt()
+CDC_fulfilled_crit2_heatmap_melt[is.na(CDC_fulfilled_crit2_heatmap_melt)] <- 2
+CDC_fulfilled_crit2_heatmap_melt$criteria <- "CDC criteria 2"
+#skim(CDC_fulfilled_crit2)
+
+
+ggplot(CDC_fulfilled_crit2_heatmap_melt, aes(x = variable, y = as.character(patientID_int), fill = as.factor(value))) + geom_tile() + 
+  theme_classic() + theme(axis.line=element_blank()) + 
+  labs(y = "Patient ID", x = "criteria", fill = "criteria met", title = "Overview of which single cases fulfill criterium 2 of the CDC case definition") +  
+  scale_fill_manual(labels = c("No", "Yes", "Missing"), values = wes_palette("Zissou1")) + 
+  theme(axis.text.x=element_text(angle=90, hjust=1)) + facet_wrap(~ criteria, scales = "free_x")
+```
+
 ### WHO case definition
 [Source UpToDate](https://www.uptodate.com/contents/image?imageKey=PEDS%2F128201&topicKey=PEDS%2F127488):
 
@@ -1650,110 +1795,110 @@ All 6 criteria must be met:
 1. Age 0 to 19 years
 2. Fever for ≥3 days
 3. Clinical signs of multisystem involvement (at least 2 of the following):
-    - Rash, bilateral nonpurulent conjunctivitis, or mucocutaneous inflammation signs (oral, hands, or feet)
-    - Hypotension or shock
-    - Cardiac dysfunction, pericarditis, valvulitis, or coronary abnormalities (including echocardiographic findings or elevated troponin/BNP)
-    - Evidence of coagulopathy (prolonged PT or PTT; elevated D-dimer)
-    - Acute gastrointestinal symptoms (diarrhea, vomiting, or abdominal pain)
+- Rash, bilateral nonpurulent conjunctivitis, or mucocutaneous inflammation signs (oral, hands, or feet)
+- Hypotension or shock
+- Cardiac dysfunction, pericarditis, valvulitis, or coronary abnormalities (including echocardiographic findings or elevated troponin/BNP)
+- Evidence of coagulopathy (prolonged PT or PTT; elevated D-dimer)
+- Acute gastrointestinal symptoms (diarrhea, vomiting, or abdominal pain)
 4. Elevated markers of inflammation (eg, ESR, CRP, or procalcitonin)
 5. No other obvious microbial cause of inflammation, including bacterial sepsis and staphylococcal/streptococcal toxic shock syndromes
 6. Evidence of SARS-CoV-2 infection
-    - Any of the following:
-    - Positive SARS-CoV-2 RT-PCR
-    - Positive serology
-    - Positive antigen test
-    - Contact with an individual with COVID-19
+- Any of the following:
+- Positive SARS-CoV-2 RT-PCR
+- Positive serology
+- Positive antigen test
+- Contact with an individual with COVID-19
 
 ```{r, fig.height= 10, fig.width= 8}
 #row <- df_singlecases[87, ]
 WHO_fulfilled <- apply(df_singlecases, 1, function(row) {
-    pat_id <- row["patientID_int"]
-    
-    # criteria 1
-    criteria1 = TRUE
-    
-    # criteria 2: fever?
-    fever <- row["symp_fever"] == TRUE | row["kawasaki_fever"] == TRUE
-
-    criteria2 <- any(fever)
-    
-    # criteria 3: clinical signs of multisystem involvement (at least 2)
-    ## Rash, bilateral nonpurulent conjunctivitis, or mucocutaneous inflammation signs (oral, hands, or feet)
-    rash <- row["kawasaki_exanthema"] == TRUE
-    conjunctivitis <- row["kawasaki_conjunctivitis"] == TRUE
-    mucocutaneaous <- row["kawasaki_mouth"] == TRUE | row["kawasaki_extremity"] == TRUE
-    
-    criteria3_a <- any(rash, conjunctivitis, mucocutaneaous)
-    
-    ## hypotension or shock
-    shock <- row["symp_cardiovasc_shock"] == TRUE
-    criteria3_b <- any(shock)
-    
-    ## cardiac dysfunction
-    myocarditis <- row["symp_cardiovasc_myocard"] == TRUE
-    pericarditis <- row["symp_cardiovasc_pericard"] == TRUE
-    LVEF_under30 <- row["symp_cardiovasc_LV_less30"] == TRUE
-    LVEF_30to55 <- row["symp_cardiovasc_LV_30to55"] == TRUE
-    BNP <- (as.numeric(row["lab_BNP_admis"]) > co_BNP | as.numeric(row["lab_BNP_max"]) > co_BNP ) 
-    NTproBNP <- as.numeric(row["lab_NTproBNP"]) > co_NTproBNP
-    tropo <- as.numeric(row["lab_troponin_admis"]) > co_tropo
-    coronary <- row["symp_cardiovasc_cordilat"] == TRUE | row["symp_cardiovasc_aneurysm"] == TRUE
-    
-    criteria3_c <- any(myocarditis, LVEF_under30, LVEF_30to55, NTproBNP, BNP, tropo, coronary)
-    
-    ## coagulopathy
-    fibrinogen <- as.numeric(row["lab_fibrino"]) > co_fibrino
-    Ddimers <- as.numeric(row["lab_Ddim_peak"]) > co_Ddim |  as.numeric(row["lab_Ddim_NS"]) > co_Ddim
-    
-    criteria3_d <- any(fibrinogen, Ddimers)
-    
-    ## acute GI symptoms
-    GIsymp <- row["symp_GI_NS"] == TRUE | row["symp_GI_abdopain"] == TRUE | row["symp_GI_vomiting"] == TRUE | row["symp_GI_diarrh"] == TRUE | row["symp_GI_colitis"] == TRUE 
-    
-    criteria3_e <- any(GIsymp)
-    
-    criteria3 <- sum(criteria3_a, criteria3_b, criteria3_c, criteria3_d, criteria3_e, na.rm = TRUE) >= 2
-      
-    # criteria 4: Elevated markers of inflammation (eg, ESR, CRP, or procalcitonin)
-    neutrophilia <- as.numeric(row["lab_neutrophils"]) > co_neutrophilia
-    elevated_CRP <- (as.numeric(row["lab_CRP_admis"]) >= co_CRP) | (as.numeric(row["lab_CRP_NS"]) >= co_CRP) | (as.numeric(row["lab_CRP_peak"]) >= co_CRP )
+  pat_id <- row["patientID_int"]
+  
+  # criteria 1
+  criteria1 = TRUE
+  
+  # criteria 2: fever?
+  fever <- row["symp_fever"] == TRUE | row["kawasaki_fever"] == TRUE
+  
+  criteria2 <- any(fever)
+  
+  # criteria 3: clinical signs of multisystem involvement (at least 2)
+  ## Rash, bilateral nonpurulent conjunctivitis, or mucocutaneous inflammation signs (oral, hands, or feet)
+  rash <- row["kawasaki_exanthema"] == TRUE
+  conjunctivitis <- row["kawasaki_conjunctivitis"] == TRUE
+  mucocutaneaous <- row["kawasaki_mouth"] == TRUE | row["kawasaki_extremity"] == TRUE
+  
+  criteria3_a <- any(rash, conjunctivitis, mucocutaneaous)
+  
+  ## hypotension or shock
+  shock <- row["symp_cardiovasc_shock"] == TRUE
+  criteria3_b <- any(shock)
+  
+  ## cardiac dysfunction
+  myocarditis <- row["symp_cardiovasc_myocard"] == TRUE
+  pericarditis <- row["symp_cardiovasc_pericard"] == TRUE
+  LVEF_under30 <- row["symp_cardiovasc_LV_less30"] == TRUE
+  LVEF_30to55 <- row["symp_cardiovasc_LV_30to55"] == TRUE
+  BNP <- (as.numeric(row["lab_BNP_admis"]) > co_BNP | as.numeric(row["lab_BNP_max"]) > co_BNP ) 
+  NTproBNP <- as.numeric(row["lab_NTproBNP"]) > co_NTproBNP
+  tropo <- as.numeric(row["lab_troponin_admis"]) > co_tropo
+  coronary <- row["symp_cardiovasc_cordilat"] == TRUE | row["symp_cardiovasc_aneurysm"] == TRUE
+  
+  criteria3_c <- any(myocarditis, LVEF_under30, LVEF_30to55, NTproBNP, BNP, tropo, coronary)
+  
+  ## coagulopathy
+  fibrinogen <- as.numeric(row["lab_fibrino"]) > co_fibrino
+  Ddimers <- as.numeric(row["lab_Ddim_peak"]) > co_Ddim |  as.numeric(row["lab_Ddim_NS"]) > co_Ddim
+  
+  criteria3_d <- any(fibrinogen, Ddimers)
+  
+  ## acute GI symptoms
+  GIsymp <- row["symp_GI_NS"] == TRUE | row["symp_GI_abdopain"] == TRUE | row["symp_GI_vomiting"] == TRUE | row["symp_GI_diarrh"] == TRUE | row["symp_GI_colitis"] == TRUE 
+  
+  criteria3_e <- any(GIsymp)
+  
+  criteria3 <- sum(criteria3_a, criteria3_b, criteria3_c, criteria3_d, criteria3_e, na.rm = TRUE) >= 2
+  
+  # criteria 4: Elevated markers of inflammation (eg, ESR, CRP, or procalcitonin)
+  neutrophilia <- as.numeric(row["lab_neutrophils"]) > co_neutrophilia
+  elevated_CRP <- (as.numeric(row["lab_CRP_admis"]) >= co_CRP) | (as.numeric(row["lab_CRP_NS"]) >= co_CRP) | (as.numeric(row["lab_CRP_peak"]) >= co_CRP )
   #  print(paste0(pat_id, elevated_CRP, row["lab_CRP_peak"]))
-    lymphopenia <- as.numeric(row["lab_lymphocytes_lowest"]) < co_lympho
-
-    ferritin <- (as.numeric(row["lab_ferritin_NS"]) > co_ferritin | as.numeric(row["lab_ferritin_admis"]) > co_ferritin | as.numeric(row["lab_ferritin_peak"]) > co_ferritin)
-    albumin <- as.numeric(row["lab_albumin_admis"]) < co_albu | as.numeric(row["lab_albumin_lowest"]) < co_albu | as.numeric(row["lab_albumin_NS"]) < co_albu
-    PCT <- as.numeric(row["lab_PCT_admis"]) > co_PCT | as.numeric(row["lab_PCT_peak"]) > co_PCT | as.numeric(row["lab_PCT_NS"]) > co_PCT 
-    LDH <- as.numeric(row["lab_LDH"]) > co_LDH
-    IL6 <- as.numeric(row["lab_IL6"]) > co_IL6
-    ESR <- as.numeric(row["lab_ESR"]) > co_ESR
-
-    criteria4 <- any(neutrophilia, elevated_CRP, lymphopenia, ferritin, albumin, PCT, LDH, IL6, ESR)
-
-    # criteria 5: No other obvious microbial cause of inflammation
-    criteria5 <- TRUE
-    
-    # criteria 6: COVID pos?
-    PCR_pos <- row["covid_PCR_pos"] == TRUE
-    stool_pos <- row["covid_PCR_stool_pos"] == TRUE
-    closecontact <- row["covid_closecontact"] == TRUE
-    IgA <- row["covid_IgA_pos"] == TRUE
-    IgM <- row["covid_IgM_pos"] == TRUE    
-    IgG <- row["covid_IgG_pos"] == TRUE    
-    any_sero <- row["covid_sero_pos"] == TRUE
-    
-    criteria6 <- any(PCR_pos, stool_pos, closecontact, IgA, IgM, IgG, any_sero)
-    
-    if (NA %in% c(criteria1, criteria2, criteria3, criteria4, criteria5, criteria6)){
-      criteria_fulfilled <- NA
-    } else if (FALSE %in% c(criteria1, criteria2, criteria3, criteria4, criteria5, criteria6)){
-      criteria_fulfilled <- FALSE
-    } else if (sum(criteria1, criteria2, criteria3, criteria4, criteria5, criteria6, na.rm = TRUE) == 6){
-      criteria_fulfilled <- TRUE
-    } else {
-      criteria_fulfilled <- FALSE
-    }
-
-    return(c(pat_id, "criteria1_age" = criteria1, "criteria2_fever" = criteria2, "criteria3_clinical" = criteria3, "criteria4_inflamm" = criteria4, "criteria5_noAlt" = criteria5, "criteria6_recentExposure" = criteria6, "criteria_fulfilled" = criteria_fulfilled))
+  lymphopenia <- as.numeric(row["lab_lymphocytes_lowest"]) < co_lympho
+  
+  ferritin <- (as.numeric(row["lab_ferritin_NS"]) > co_ferritin | as.numeric(row["lab_ferritin_admis"]) > co_ferritin | as.numeric(row["lab_ferritin_peak"]) > co_ferritin)
+  albumin <- as.numeric(row["lab_albumin_admis"]) < co_albu | as.numeric(row["lab_albumin_lowest"]) < co_albu | as.numeric(row["lab_albumin_NS"]) < co_albu
+  PCT <- as.numeric(row["lab_PCT_admis"]) > co_PCT | as.numeric(row["lab_PCT_peak"]) > co_PCT | as.numeric(row["lab_PCT_NS"]) > co_PCT 
+  LDH <- as.numeric(row["lab_LDH"]) > co_LDH
+  IL6 <- as.numeric(row["lab_IL6"]) > co_IL6
+  ESR <- as.numeric(row["lab_ESR"]) > co_ESR
+  
+  criteria4 <- any(neutrophilia, elevated_CRP, lymphopenia, ferritin, albumin, PCT, LDH, IL6, ESR)
+  
+  # criteria 5: No other obvious microbial cause of inflammation
+  criteria5 <- TRUE
+  
+  # criteria 6: COVID pos?
+  PCR_pos <- row["covid_PCR_pos"] == TRUE
+  stool_pos <- row["covid_PCR_stool_pos"] == TRUE
+  closecontact <- row["covid_closecontact"] == TRUE
+  IgA <- row["covid_IgA_pos"] == TRUE
+  IgM <- row["covid_IgM_pos"] == TRUE    
+  IgG <- row["covid_IgG_pos"] == TRUE    
+  any_sero <- row["covid_sero_pos"] == TRUE
+  
+  criteria6 <- any(PCR_pos, stool_pos, closecontact, IgA, IgM, IgG, any_sero)
+  
+  if (NA %in% c(criteria1, criteria2, criteria3, criteria4, criteria5, criteria6)){
+    criteria_fulfilled <- NA
+  } else if (FALSE %in% c(criteria1, criteria2, criteria3, criteria4, criteria5, criteria6)){
+    criteria_fulfilled <- FALSE
+  } else if (sum(criteria1, criteria2, criteria3, criteria4, criteria5, criteria6, na.rm = TRUE) == 6){
+    criteria_fulfilled <- TRUE
+  } else {
+    criteria_fulfilled <- FALSE
+  }
+  
+  return(c(pat_id, "criteria1_age" = criteria1, "criteria2_fever" = criteria2, "criteria3_clinical" = criteria3, "criteria4_inflamm" = criteria4, "criteria5_noAlt" = criteria5, "criteria6_recentExposure" = criteria6, "criteria_fulfilled" = criteria_fulfilled))
 })
 
 
@@ -1771,7 +1916,7 @@ skim(WHO_fulfilled)
 ```
 
 ## Per-case overview
-```{r, fig.height = 10, fig.width=7}
+```{r, fig.height = 16, fig.width=7}
 PIMS_TS_fulfilled_heatmap_melt$criteria <- "PIMS-TS"
 WHO_fulfilled_heatmap_melt$criteria <- "WHO"
 CDC_fulfilled_heatmap_melt$criteria <- "CDC"
@@ -1785,7 +1930,7 @@ ggplot(full_heatmap, aes(x = variable, y = as.character(patientID_int), fill = a
 
 
 ## Summary
-```{r}
+```{r, fig.height=4, fig.width=7}
 criteria_summary <- data.frame(PIMS_TS_fulfilled %>% select(criteria_fulfilled), CDC_fulfilled %>% select(criteria_fulfilled), WHO_fulfilled %>% select(criteria_fulfilled))
 colnames(criteria_summary) <- c("PIMS-TS", "CDC", "WHO")
 
@@ -1793,22 +1938,24 @@ cols <- sapply(criteria_summary, is.logical)
 criteria_summary[,cols] <- lapply(criteria_summary[,cols], as.numeric)
 
 criteria_summary <- criteria_summary %>% melt() %>% 
-                          group_by(variable) %>% 
-                          summarise(fulfilled = sum(value == 1, na.rm = TRUE), not_fulfilled = sum(value == 0, na.rm = TRUE), not_assessable = sum(is.na(value)))
+  group_by(variable) %>% 
+  summarise(fulfilled = sum(value == 1, na.rm = TRUE), not_fulfilled = sum(value == 0, na.rm = TRUE), not_assessable = sum(is.na(value)))
 criteria_summary$sum <- rowSums(criteria_summary[,-1])
 
 criteria_summary_melt <- criteria_summary %>% melt()
-colnames(criteria_summary_melt) <- c("center", "fulfilled", "count")
+colnames(criteria_summary_melt) <- c("case_definition", "fulfilled", "count")
 
-fill_bar <- ggplot(criteria_summary_melt %>% filter(fulfilled != 'sum'), aes(x = center, y = count, fill = fulfilled)) + 
-      geom_bar(stat = "identity", position = "fill") + theme_bw() + 
-      labs(y = "ratio", title = "Single cases meeting which criteria", subtitle = paste0("percent of total (n = ", max(criteria_summary_melt$count) ,")")) +
-        scale_fill_manual(values = wes_palette("Royal1")[c(1,2,4)])
+fill_bar <- ggplot(criteria_summary_melt %>% filter(fulfilled != 'sum'), aes(x = case_definition, y = count, fill = fulfilled)) + 
+  geom_bar(stat = "identity", position = "fill") + theme_bw() + 
+  labs(y = "fraction", title = "Single cases meeting which criteria", subtitle = paste0("fraction of total (n = ", max(criteria_summary_melt$count) ,")")) +
+     theme(legend.title = element_blank()) +
+  scale_fill_manual(values = wes_palette("Royal1")[c(1,2,4)])
 
-dodge_bar <- ggplot(criteria_summary_melt %>% filter(fulfilled != 'sum'), aes(x = center, y = count, fill = fulfilled)) + 
-      geom_bar(stat = "identity", position = "dodge") + theme_bw() + 
-      labs(y = "n", title = "Single cases meeting which criteria", subtitle = "absolute values") +
-        scale_fill_manual(values = wes_palette("Royal1")[c(1,2,4)])
+dodge_bar <- ggplot(criteria_summary_melt %>% filter(fulfilled != 'sum'), aes(x = case_definition, y = count, fill = fulfilled)) + 
+  geom_bar(stat = "identity", position = "dodge") + theme_bw() + 
+  labs(y = "number of cases", title = "Single cases meeting which criteria", subtitle = "absolute values") +
+   theme(legend.title = element_blank()) +
+  scale_fill_manual(values = wes_palette("Royal1")[c(1,2,4)])
 
 ggarrange(dodge_bar, fill_bar, legend = "bottom", common.legend = TRUE)
 ```
@@ -1841,8 +1988,8 @@ assoc_outcome_full[,cols] <- lapply(assoc_outcome_full[,cols], as.numeric)
 makeUpsetR(assoc_outcome_full %>% select(-contains("patientID")))
 ```
 
-## Unfavourable course
-A new variable 'unfavourable course' made, which contains the following:
+## Severe course
+A new variable 'severe course' made, which contains the following:
 
 - symp_cardiovasc_cordilat 
 - symp_cardiovasc_aneurysm
@@ -1871,38 +2018,30 @@ assoc_outcome_full <- merge(outcome_params, assoc_outcome, by = "patientID_int")
 cols <- sapply(assoc_outcome_full, is.logical)
 assoc_outcome_full[,cols] <- lapply(assoc_outcome_full[,cols], as.numeric)
 
-assoc_outcome_full$unfavourable_course <- ifelse(assoc_outcome_full$symp_cardiovasc_cordilat == 1 | assoc_outcome_full$symp_cardiovasc_aneurysm == 1 | assoc_outcome_full$symp_cardiovasc_shock == 1 | assoc_outcome_full$outcome_death == 1 | assoc_outcome_full$critcare_MV == 1 | assoc_outcome_full$critcare_ECMO == 1 | assoc_outcome_full$critcare_RRT == 1 | assoc_outcome_full$admis_PICU_admis == 1 | assoc_outcome_full$critcare_inotrop == 1 , 1, 0)
+assoc_outcome_full$severe_course <- ifelse(assoc_outcome_full$symp_cardiovasc_cordilat == 1 | assoc_outcome_full$symp_cardiovasc_aneurysm == 1 | assoc_outcome_full$symp_cardiovasc_shock == 1 | assoc_outcome_full$outcome_death == 1 | assoc_outcome_full$critcare_MV == 1 | assoc_outcome_full$critcare_ECMO == 1 | assoc_outcome_full$critcare_RRT == 1 | assoc_outcome_full$admis_PICU_admis == 1 | assoc_outcome_full$critcare_inotrop == 1 , 1, 0)
 
-assoc_outcome_full$mild_presentation <- ifelse((assoc_outcome_full$unfavourable_course == 0 | is.na(assoc_outcome_full$unfavourable_course)), 1, 0)
+assoc_outcome_full$mild_presentation <- ifelse((assoc_outcome_full$severe_course == 0 | is.na(assoc_outcome_full$severe_course)), 1, 0)
 
-makeUpsetR(assoc_outcome_full %>% select(contains("casedef") | contains("unfavourable_course") ))
+makeUpsetR(assoc_outcome_full %>% select(contains("casedef") | contains("severe_course") ))
 
 
-makeUpsetR(assoc_outcome_full %>% select(contains("casedef") | contains("unfavourable_course")  | contains("mild_pres") ))
+makeUpsetR(assoc_outcome_full %>% select(contains("casedef") | contains("severe_course")  | contains("mild_pres") ))
 
-#datatable(assoc_outcome_full %>% select(contains("patient") | contains("casedef") | contains("unfavourable_course") | contains("mild_pres")))
 
 ```
 
-## PICU candidate
-A new variable 'PICU candidate' made, which contains the following:
+## Characteristics of severe course
 
-- symp_cardiovasc_shock 
-- outcome_death
-- critcare_MV 
-- critcare_ECMO
-- critcare_RRT
-- critcare_inotrop
-- admis_PICU_admis
 
-Mild presentation means all of the above are either 0 or NA. 
-
-Cases with missing values in case defintions are removed.
+<button onclick="location.href='https://github.com/rmvpaeme/PIMS_TS/blob/master/data/unfavorable_course_descriptivestats.csv'" type="button">
+Download data as .csv on Github</button>
 
 ```{r}
+# in this step, do not remove NAs
 assoc_outcome <- merge(WHO_outcome, CDC_outcome, by = "patientID_int")
 assoc_outcome <- merge(assoc_outcome, PIMS_TS_outcome)
-assoc_outcome <- assoc_outcome[complete.cases(assoc_outcome[ ,-1]),]
+assoc_outcome <- merge(assoc_outcome, PIMS_TS_outcome)
+#assoc_outcome <- assoc_outcome[complete.cases(assoc_outcome[ ,-1]),]
 
 outcome_params <- df_singlecases %>% select(patientID_int | contains("critcare")  | contains("admis_PICU_admis") | contains("outcome_death")  |contains ("symp_cardiovasc_cordilat") | contains ("symp_cardiovasc_aneurysm")  |contains("symp_cardiovasc_shock"))
 
@@ -1911,17 +2050,80 @@ assoc_outcome_full <- merge(outcome_params, assoc_outcome, by = "patientID_int")
 cols <- sapply(assoc_outcome_full, is.logical)
 assoc_outcome_full[,cols] <- lapply(assoc_outcome_full[,cols], as.numeric)
 
-assoc_outcome_full$PICU_candidate <- ifelse( assoc_outcome_full$symp_cardiovasc_shock == 1 | assoc_outcome_full$outcome_death == 1 | assoc_outcome_full$critcare_MV == 1 | assoc_outcome_full$critcare_ECMO == 1 | assoc_outcome_full$critcare_RRT == 1 | assoc_outcome_full$admis_PICU_admis == 1 | assoc_outcome_full$critcare_inotrop == 1 , 1, 0)
-
-assoc_outcome_full$mild_presentation <- ifelse((assoc_outcome_full$PICU_candidate == 0 | is.na(assoc_outcome_full$PICU_candidate)), 1, 0)
-
-makeUpsetR(assoc_outcome_full %>% select(contains("casedef") | contains("PICU_candidate") ))
+assoc_outcome_full$severe_course <- ifelse(assoc_outcome_full$symp_cardiovasc_cordilat == 1 | assoc_outcome_full$symp_cardiovasc_aneurysm == 1 | assoc_outcome_full$symp_cardiovasc_shock == 1 | assoc_outcome_full$outcome_death == 1 | assoc_outcome_full$critcare_MV == 1 | assoc_outcome_full$critcare_ECMO == 1 | assoc_outcome_full$critcare_RRT == 1 | assoc_outcome_full$admis_PICU_admis == 1 | assoc_outcome_full$critcare_inotrop == 1 , 1, 0)
 
 
-makeUpsetR(assoc_outcome_full %>% select(contains("casedef") | contains("PICU_candidate")  | contains("mild_pres") ))
+tab1 <- assoc_outcome_full %>% select(patientID_int,severe_course)
+tab1$severe_course <- ifelse(is.na(tab1$severe_course), 0, 1)
 
-#datatable(assoc_outcome_full %>% select(contains("patient") | contains("casedef") | contains("PICU_candidate") | contains("mild_pres")))
+tab2 <- df_singlecases %>% select(patientID_int, 
+                                  sex, age,
+                                  symp_resp_any,
+                                  symp_cardiovasc_any,
+                                  symp_cardiovasc_myocard,
+                                  symp_cardiovasc_pericard,
+                                  symp_cardiovasc_cordilat,
+                                  symp_cardiovasc_aneurysm,
+                                  symp_cardiovasc_LV_30to55,
+                                  symp_cardiovasc_LV_less30,
+                                  symp_cardiovasc_shock,
+                                  symp_cardiovasc_LVEF,
+                                  symp_cardiovasc_tachycard,
+                                  symp_GI_any,
+                                  symp_neuro_any,
+                                  kawasaki_complete,
+                                  kawasaki_incomplete,
+                                  kawasaki_fever,
+                                  kawasaki_exanthema,
+                                  kawasaki_extremity,
+                                  kawasaki_mouth,
+                                  kawasaki_cervical,
+                                  kawasaki_conjunctivitis,
+                                  covid_PCR_pos,
+                                  covid_sero_any, 
+                                  admis_PICU_admis,
+                                  critcare_NIV,
+                                  critcare_MV,
+                                  critcare_inotrop,
+                                  critcare_ECMO,
+                                  critcare_RRT,
+                                  rx_cortic,
+                                  rx_heparin,
+                                  rx_IVIg_once,
+                                  rx_IVIg_multip,
+                                  rx_anakinra,
+                                  rx_tocilizumab,
+                                  rx_infliximab,
+                                  rx_antibiotics,
+                                  rx_plasma,
+                                  rx_remdesivir)
 
+tab2$sex <- as.factor(tab2$sex)
+
+labvals <-
+  data.frame(
+    collapse_labvals_single(df_singlecases, "max", "CRP") %>% select(CRP_max),
+    collapse_labvals_single(df_singlecases, "max", "ferritin") %>% select(ferritin_max),
+    collapse_labvals_single(df_singlecases, "max", "IL") %>% select(IL_max),
+    collapse_labvals_single(df_singlecases, "max", "WBC") %>% select(WBC_max),
+    collapse_labvals_single(df_singlecases, "min", "lympho") %>% select(lympho_min),
+    collapse_labvals_single(df_singlecases, "min", "platelet") %>% select(platelet_min),
+    collapse_labvals_single(df_singlecases, "min", "sodium") %>% select(sodium_min),
+    collapse_labvals_single(df_singlecases, "max", "Ddim") %>% select(Ddim_max),
+    collapse_labvals_single(df_singlecases, "max", "trop") %>% select(trop_max)
+  )
+tab2 <- cbind(tab2, labvals)
+
+tab <- merge(tab1, tab2)
+
+skim <- tab %>% group_by(severe_course) %>% skim()
+
+skim <- skim %>% select(skim_variable, severe_course, factor.top_counts, logical.count,  numeric.p25,  numeric.p50,  numeric.p75, n_missing)
+
+skim$n_total <- rep(count(tab1, severe_course) %>% pull(n), nrow(skim)/2)
+skim$n_valid <- skim$n_total - skim$n_missing
+
+write.csv(skim, paste0("./data/unfavorable_course_descriptivestats.csv"))
 ```
 
 

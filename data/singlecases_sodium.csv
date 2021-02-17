@@ -1,4 +1,4 @@
 "","skim_type","skim_variable","n_missing","complete_rate","character.min","character.max","character.empty","character.n_unique","character.whitespace","numeric.mean","numeric.sd","numeric.p0","numeric.p25","numeric.p50","numeric.p75","numeric.p100","numeric.hist"
-"1","character","cohort_id",0,1,21,21,0,1,0,NA,NA,NA,NA,NA,NA,NA,NA
-"2","numeric","lab_sodium",47,0.505263157894737,NA,NA,NA,NA,NA,130,4.22756909175142,118,128,130,133,139,"▂▂▇▇▃"
-"3","numeric","sodium_min",47,0.505263157894737,NA,NA,NA,NA,NA,130,4.22756909175142,118,128,130,133,139,"▂▂▇▇▃"
+"1","character","cohort_id",0,1,22,22,0,1,0,NA,NA,NA,NA,NA,NA,NA,NA
+"2","numeric","lab_sodium",77,0.442028985507246,NA,NA,NA,NA,NA,130.126229508197,4.46041484017441,118,128,130,133,139,"▂▂▇▇▃"
+"3","numeric","sodium_min",77,0.442028985507246,NA,NA,NA,NA,NA,130.126229508197,4.46041484017441,118,128,130,133,139,"▂▂▇▇▃"
